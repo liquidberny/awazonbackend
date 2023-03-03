@@ -1,5 +1,10 @@
+LINKS DE REFERENCIAS:
+    https://mongoosejs.com/docs/guide.html
+    https://youtu.be/wnfjx65aQTw  ---Mayor fuente de referencia de este proyecto
+
+
 INFORMACIÓN DE CUENTA:
-    La cuenta de gmail usada para crear la cuenta de mongodb es: "awasonochoa@gmail.com", la contraseña es: "awason2023" (para ambos gmail y mongodb).
+    La cuenta de gmail usada para crear la cuenta de mongodb es: "awasonochoa@gmail.com", la contraseña es: "awazon2023" (para ambos gmail y mongodb).
 
 INFORMACION DE DATABASE USER:
     El database user para leer y escribir a cualquier base de datos es: "awasonochoa", y la contraseña es "Pxf0LmTa7SJr38wJ".
@@ -16,3 +21,6 @@ DESARROLLO DEL PROYECTO:
     03/03/2023 
         11:23 Berny: Hice el "esqueleto" de este repositorio, escribí informacion en este readme y le voy a dar acceso a todos en cuanto suba esta madre al gitlab.
         11:44: "Añadi MONGODB_URI= mongodb+srv://awasonochoa:Pxf0LmTa7SJr38wJ@awasoncluster.zee8ncw.mongodb.net/awasonochoa?retryWrites=true&w=majority en el archivo ".env" y agrege codigo para ejecutar el servidor.
+    03/03/2023
+        2:02 Daniel: Cree la carpeta models y tambien cree el archivo Users.js
+        2:22 Daniel: Coloque el codigo del archivo Users,js y tambien hice npm install para tener los paquetes faltantes
