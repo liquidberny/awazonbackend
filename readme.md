@@ -1,5 +1,5 @@
 INFORMACIÓN DE CUENTA:
-    La cuenta de gmail usada para crear la cuenta de mongodb es: "awasonochoa@gmail.com", la contraseña es: "awason2023" (para ambos gmail y mongodb).
+    La cuenta de gmail usada para crear la cuenta de mongodb es: "awasonochoa@gmail.com", la contraseña es: "awazon2023" (para ambos gmail y mongodb).
 
 INFORMACION DE DATABASE USER:
     El database user para leer y escribir a cualquier base de datos es: "awasonochoa", y la contraseña es "Pxf0LmTa7SJr38wJ".
