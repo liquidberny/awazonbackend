@@ -13,4 +13,6 @@ FAQ:
     Preguntale a cualquiera del equipo que te pueda responder o busca la respuesta en internet, cuando la tengas, haz el favor de anotarla en este apartado de FAQ.
 
 DESARROLLO DEL PROYECTO:
-    03/03/2023 11:23 Berny: Hice el "esqueleto" de este repositorio, escribí informacion en este readme y le voy a dar acceso a todos en cuanto suba esta madre al gitlab.
+    03/03/2023 
+        11:23 Berny: Hice el "esqueleto" de este repositorio, escribí informacion en este readme y le voy a dar acceso a todos en cuanto suba esta madre al gitlab.
+        11:44: "Añadi MONGODB_URI= mongodb+srv://awasonochoa:Pxf0LmTa7SJr38wJ@awasoncluster.zee8ncw.mongodb.net/awasonochoa?retryWrites=true&w=majority en el archivo ".env" y agrege codigo para ejecutar el servidor.
