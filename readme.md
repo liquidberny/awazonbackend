@@ -24,3 +24,6 @@ DESARROLLO DEL PROYECTO:
     03/03/2023
         2:02 Daniel: Cree la carpeta models y tambien cree el archivo Users.js
         2:22 Daniel: Coloque el codigo del archivo Users,js y tambien hice npm install para tener los paquetes faltantes
+    04/03/2023
+        12:35 Jesús: Se creo la carpeta api y se creo el archivo User.js
+        12:35 Jesús: Se coloco el codigo correspondiente en el archivo User.js y se importo en el archivo server.js
