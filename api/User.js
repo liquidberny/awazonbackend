@@ -24,4 +24,29 @@ router.get("/read", async (req, res) => {
   });
 });
 
+//edit user
+router.put("/updateUser",async (req,res)=>{
+  const id=req.body.id;
+  const name = req.body.name;
+  const apellidos = req.body.apellidos;
+  const email = req.body.email;
+  const password = req.body.password;
+  const num_contacto = req.body.num_contacto;
+  const calificacion = req.body.calificacion;
+  try {
+    await User.findById(id,(err,updatedUser)=>{
+      updatedUser.name=name;
+      updatedUser.apellidos=apellidos;
+      updatedUser.email=email;
+      updatedUser.password=password;
+      updatedUser.num_contacto=num_contacto;
+      updatedUser.calificacion=calificacion;
+      updatedUser.save();
+      res.send("updated");
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 module.exports = router;

@@ -27,3 +27,5 @@ DESARROLLO DEL PROYECTO:
     04/03/2023
         12:35 Jesús: Se creo la carpeta api y se creo el archivo User.js
         12:35 Jesús: Se coloco el codigo correspondiente en el archivo User.js y se importo en el archivo server.js
+    04/03/2023
+        1:38 pm Angel: Se creo el endpoint para editar usuario en api/User.js.
