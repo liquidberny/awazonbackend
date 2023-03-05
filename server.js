@@ -1,8 +1,10 @@
+//Import env
+require('dotenv').config();
 //mongodb
 require("./config/db");
 
+
 const app = require("express")();
-const port = 3001;
 
 //cors
 const cors = require("cors");
@@ -15,6 +17,6 @@ app.use(bodyParser({
 const UserRouter = require("./api/User");
 
 app.use("/user", UserRouter);
-app.listen(port, () => {
-  console.log(`server running on port ${port}`);
+app.listen(process.env.PORT, () => {
+  console.log(`server running on port ${process.env.PORT}`);
 });
