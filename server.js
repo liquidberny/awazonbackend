@@ -7,8 +7,12 @@ const port = 3001;
 //cors
 const cors = require("cors");
 app.use(cors());
-
-const UserRouter = requiere("./api/User");
+//For accepting post from data
+const bodyParser = require('express').json;
+app.use(bodyParser({
+  limits: { fileSize: 3 * 1024 * 1024 }
+}));
+const UserRouter = require("./api/User");
 
 app.use("/user", UserRouter);
 app.listen(port, () => {
