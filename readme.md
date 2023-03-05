@@ -29,3 +29,5 @@ DESARROLLO DEL PROYECTO:
         12:35 Jesús: Se coloco el codigo correspondiente en el archivo User.js y se importo en el archivo server.js
     04/03/2023
         1:38 pm Angel: Se creo el endpoint para editar usuario en api/User.js.
+    04/03/2023
+        11:03PM Berny: Cree el endpoint para crear dar de alta usuario y corregí la ubicacion de la importacion de un modulo, a parte hacia falta la linea de body parser en el server.js.
