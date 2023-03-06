@@ -132,4 +132,18 @@ router.put("/updateUser", async (req, res) => {
   }
 });
 
+//delete user
+router.put("/deleteUser/:id",async (req, res)=>{
+  let id = req.params.id;
+  User
+  .findByIdAndRemove(id)
+  .exec()
+  .then(doc =>{
+    if(!doc){return res.status(404).end();}
+    return res.status(204).end();
+  })
+  .catch(err => next(err));
+});
+
+
 module.exports = router;
