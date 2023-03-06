@@ -33,3 +33,5 @@ DESARROLLO DEL PROYECTO:
         11:03PM Berny: Cree el endpoint para crear dar de alta usuario y corregí la ubicacion de la importacion de un modulo, a parte hacia falta la linea de body parser en el server.js.
     06/03/2023
         9:37AM Jose: Ya quedo el endpoint para borrar el user usando la id del usuario. 
+    06/03/2023
+        11:22 Am Berny: Ya se puede autenticar credenciales desde el endpoint /signin.
