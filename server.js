@@ -15,8 +15,10 @@ app.use(bodyParser({
   limits: { fileSize: 3 * 1024 * 1024 }
 }));
 const UserRouter = require("./api/User");
+const ClientRouter = require("./api/Client")
 
 app.use("/user", UserRouter);
+app.use("/client", ClientRouter);
 
 app.listen(process.env.PORT, () => {
   console.log(`server running on port ${process.env.PORT}`);
