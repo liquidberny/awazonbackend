@@ -5,7 +5,7 @@ const Client = require("../models/Client");
 //contrasena
 const bcrypt = require('bcrypt');
 //signup client
-router.post('/signupClient', (req, res) => {
+router.post('/signup', (req, res) => {
     let nombre = req.body.nombre;
     let apellidos = req.body.apellidos
     let email = req.body.email
@@ -119,6 +119,28 @@ router.put("/updateHorario/:id", async (req, res) => {
 
         console.log(err);
     }
+});
+
+//Read Client
+router.get("/read/:id", async (req, res) => {
+  let id = req.params.id;
+  await Client.findById(id).exec((err, result) => {
+    if (err) {
+      res.send(err);
+    }
+    res.send(result);
+    console.log(result);
+  });
+});
+
+//get Client
+router.get("/read", async (req, res) => {
+  Client.find({}, (err, result) => {
+    if (err) {
+      res.send(err);
+    }
+    res.send(result);
+  });
 });
 
 module.exports = router;
