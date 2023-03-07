@@ -4,7 +4,7 @@ LINKS DE REFERENCIAS:
 
 
 INFORMACIÓN DE CUENTA:
-    La cuenta de gmail usada para crear la cuenta de mongodb es: "awasonochoa@gmail.com", la contraseña es: "awazon2023" (para ambos gmail y mongodb).
+    La cuenta de gmail usada para crear la cuenta de mongodb es: "awasonochoa@gmail.com", la contraseña es: "awason2023" (para ambos gmail y mongodb).
 
 INFORMACION DE DATABASE USER:
     El database user para leer y escribir a cualquier base de datos es: "awasonochoa", y la contraseña es "Pxf0LmTa7SJr38wJ".
@@ -38,7 +38,8 @@ DESARROLLO DEL PROYECTO:
     07/03/2023
         11:20 Berny: Cree unos modelos Carrier y Cliente, heredando los atributos de user. Toca crear los endpoints  de carrier y client respectivamente.
         11:25 Jesús: Cambio del nombre de las variables a como aparecen en el diagrama de clase (nombre, apellidos, email, contrasena) en todos los archivos donde aparecen    estas variables.
-    07/03/2023
         1:15 Daniel: Agregue el codigo para hacer el endpoint edit horario
         1:44 Daniel: Modifique el modelo del Cliente.js para Horario
         2:00 Daniel: Agregue las lineas de codigo "const ClientRouter = require("./api/Client")" y "app.use("/client", ClientRouter);" en server.js
+        2:14 Angel: Cree un metodo para registrar un nuevo Carrier en api/Carrier.js basado en el metodo que se encuentra en api/User.js
+        2:41 Angel: Cree un metodo para registrar un nuevo Client en api/Client.js basado en el metodo que se encuentra en api/User.js

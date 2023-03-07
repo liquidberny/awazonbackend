@@ -16,9 +16,11 @@ app.use(bodyParser({
 }));
 const UserRouter = require("./api/User");
 const ClientRouter = require("./api/Client")
+const CarrierRouter = require("./api/Carrier");
 
 app.use("/user", UserRouter);
 app.use("/client", ClientRouter);
+app.use('/carrier',CarrierRouter);
 
 app.listen(process.env.PORT, () => {
   console.log(`server running on port ${process.env.PORT}`);

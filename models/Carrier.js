@@ -10,7 +10,7 @@ const CarrierSchema = new mongoose.Schema({
         modelo: { type: String },
         año: { type: Number },
     },
-    admin: { type: Boolean, default: false},
+    isActive: { type: Boolean, default: false},
     precioGarrafon: Decimal128,
     balance: Decimal128,
 });
