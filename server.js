@@ -17,6 +17,7 @@ app.use(bodyParser({
 const UserRouter = require("./api/User");
 
 app.use("/user", UserRouter);
+
 app.listen(process.env.PORT, () => {
   console.log(`server running on port ${process.env.PORT}`);
 });

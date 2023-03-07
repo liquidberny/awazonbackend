@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 
 
 const UserSchema = new mongoose.Schema({
-    name: String,
+    nombre: String,
     apellidos: String,
     email: String,
-    password: String,
+    contrasena: String,
     num_contacto: Number,
     calificacion: Decimal128,  
 });
