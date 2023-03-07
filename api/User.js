@@ -2,24 +2,24 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 
-//password
+//contrasena
 const bcrypt = require('bcrypt');
 //sign up
 router.post('/signup', (req, res) => {
-  let name = req.body.name;
+  let nombre = req.body.nombre;
   let apellidos = req.body.apellidos
   let email = req.body.email
-  let password = req.body.password
+  let contrasena = req.body.contrasena
   let num_contacto = req.body.num_contacto
-  if (name == "" || email == "" || password == "" || apellidos == "") {
+  if (nombre == "" || email == "" || contrasena == "" || apellidos == "") {
     res.json({
       status: "FAILED",
       message: "Empty input fields!"
     });
-  } else if (!/[^0-9\.\,\"\?\!\;\:\#\$\%\&\(\)\*\+\-\/\<\>\=\@\[\]\\\^\_\{\}\|\~]*$/.test(name)) {
+  } else if (!/[^0-9\.\,\"\?\!\;\:\#\$\%\&\(\)\*\+\-\/\<\>\=\@\[\]\\\^\_\{\}\|\~]*$/.test(nombre)) {
     res.json({
       status: "FAILED",
-      message: "Invalid name entry"
+      message: "Invalid nombre entry"
     })
   } else if (!/^([A-Z|a-z|0-9](\.|_){0,1})+[A-Z|a-z|0-9]\@([A-Z|a-z|0-9])+((\.){0,1}[A-Z|a-z|0-9]){2}\.[a-z]{2,3}$/.test(email)) {
     res.json({
@@ -40,12 +40,12 @@ router.post('/signup', (req, res) => {
 
         //Password handling
         const saltRounds = 10;
-        bcrypt.hash(password, saltRounds).then(hashedPassword => {
+        bcrypt.hash(contrasena, saltRounds).then(hashedPassword => {
           const newUser = new User({
-            name,
+            nombre,
             apellidos,
             email,
-            password: hashedPassword,
+            contrasena: hashedPassword,
             num_contacto
           });
 
@@ -66,7 +66,7 @@ router.post('/signup', (req, res) => {
           .catch(err => {
             res.json({
               status: "FAILED",
-              message: "An error occurred while hashing password!"
+              message: "An error occurred while hashing contrasena!"
             })
           })
       }
@@ -88,11 +88,11 @@ router.post('/signup', (req, res) => {
 
 //Signin
 router.post('/signin', (req, res) => {
-  let { email, password } = req.body;
+  let { email, contrasena } = req.body;
   email = email.trim();
-  password = password.trim();
+  contrasena = contrasena.trim();
 
-  if (email == "" || password == "") {
+  if (email == "" || contrasena == "") {
       res.json({
           status: "FAILED",
           message: "Empty credentials supplied"
@@ -103,8 +103,8 @@ router.post('/signin', (req, res) => {
           .then(data => {
               if (data.length) {
                   //User exists
-                  const hashedPassword = data[0].password;
-                  bcrypt.compare(password, hashedPassword).then(result => {
+                  const hashedPassword = data[0].contrasena;
+                  bcrypt.compare(contrasena, hashedPassword).then(result => {
                       if (result) {
                           //Password match
                           res.json({
@@ -115,7 +115,7 @@ router.post('/signin', (req, res) => {
                       } else {
                           res.json({
                               status: "FAILED",
-                              message: "Invalid password entered"
+                              message: "Invalid contrasena entered"
                           })
                       }
                   })
@@ -165,18 +165,18 @@ router.get("/read", async (req, res) => {
 //edit user
 router.put("/updateUser", async (req, res) => {
   const id = req.body.id;
-  const name = req.body.name;
+  const nombre = req.body.nombre;
   const apellidos = req.body.apellidos;
   const email = req.body.email;
-  const password = req.body.password;
+  const contrasena = req.body.contrasena;
   const num_contacto = req.body.num_contacto;
   const calificacion = req.body.calificacion;
   try {
     await User.findById(id, (err, updatedUser) => {
-      updatedUser.name = name;
+      updatedUser.nombre = nombre;
       updatedUser.apellidos = apellidos;
       updatedUser.email = email;
-      updatedUser.password = password;
+      updatedUser.contrasena = contrasena;
       updatedUser.num_contacto = num_contacto;
       updatedUser.calificacion = calificacion;
       updatedUser.save();

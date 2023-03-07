@@ -35,3 +35,5 @@ DESARROLLO DEL PROYECTO:
         9:37AM Jose: Ya quedo el endpoint para borrar el user usando la id del usuario. 
     06/03/2023
         11:22 Am Berny: Ya se puede autenticar credenciales desde el endpoint /signin.
+    07/03/2023
+        11:25 Jesús: Cambio del nombre de las variables a como aparecen en el diagrama de clase (nombre, apellidos, email, contrasena) en todos los archivos donde aparecen    estas variables.
