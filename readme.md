@@ -38,4 +38,7 @@ DESARROLLO DEL PROYECTO:
     07/03/2023
         11:20 Berny: Cree unos modelos Carrier y Cliente, heredando los atributos de user. Toca crear los endpoints  de carrier y client respectivamente.
         11:25 Jesús: Cambio del nombre de las variables a como aparecen en el diagrama de clase (nombre, apellidos, email, contrasena) en todos los archivos donde aparecen    estas variables.
+        1:15 Daniel: Agregue el codigo para hacer el endpoint edit horario
+        1:44 Daniel: Modifique el modelo del Cliente.js para Horario
+        2:00 Daniel: Agregue las lineas de codigo "const ClientRouter = require("./api/Client")" y "app.use("/client", ClientRouter);" en server.js
         2:14 Angel: Cree un metodo para registrar un nuevo Carrier basado en el metodo que se encuentra en api/User.js
