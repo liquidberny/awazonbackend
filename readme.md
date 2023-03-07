@@ -44,3 +44,4 @@ DESARROLLO DEL PROYECTO:
         2:14 Angel: Cree un metodo para registrar un nuevo Carrier en api/Carrier.js basado en el metodo que se encuentra en api/User.js
         2:41 Angel: Cree un metodo para registrar un nuevo Client en api/Client.js basado en el metodo que se encuentra en api/User.js
         4:11 pm Jesús: Agregue el get para el cliente y carrier, tambien poder buscarlo mediante el id que tenga.
+        4:06 Daniel: Agregue el codigo del endpoint edit vehiculo 

@@ -132,4 +132,31 @@ router.get("/read", async (req, res) => {
   });
 });
 
+//edit  Vehiculo
+router.put("/updateVehiculo/:id", async (req, res) => {
+    const id = req.body.id;
+    const matricula = req.body.vehiculo.matricula;
+    const id_transp = req.body.vehiculo.id_transp;
+    const marca = req.body.vehiculo.marca;
+    const modelo = req.body.vehiculo.modelo;
+    const año = req.body.vehiculo.año;
+    try {
+        await Carrier.findById(id, (err, updatedVehiculo) => {
+            updatedVehiculo.matricula = matricula;
+            updatedVehiculo.id_transp = id_transp;
+            updatedVehiculo.marca = marca;
+            updatedVehiculo.modelo = modelo;
+            updatedVehiculo.año = año;
+
+            
+            updatedVehiculo.save();
+            res.send("updated");
+
+        });
+    } catch (err) {
+
+        console.log(err);
+    }
+});
+
 module.exports = router;
