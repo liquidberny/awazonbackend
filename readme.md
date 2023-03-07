@@ -41,4 +41,5 @@ DESARROLLO DEL PROYECTO:
         1:15 Daniel: Agregue el codigo para hacer el endpoint edit horario
         1:44 Daniel: Modifique el modelo del Cliente.js para Horario
         2:00 Daniel: Agregue las lineas de codigo "const ClientRouter = require("./api/Client")" y "app.use("/client", ClientRouter);" en server.js
-        2:14 Angel: Cree un metodo para registrar un nuevo Carrier basado en el metodo que se encuentra en api/User.js
+        2:14 Angel: Cree un metodo para registrar un nuevo Carrier en api/Carrier.js basado en el metodo que se encuentra en api/User.js
+        2:41 Angel: Cree un metodo para registrar un nuevo Client en api/Client.js basado en el metodo que se encuentra en api/User.js

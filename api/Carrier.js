@@ -12,6 +12,7 @@ router.post('/signupCarrier', (req, res) => {
     let email = req.body.email;
     let contrasena = req.body.contrasena;
     let num_contacto = req.body.num_contacto;
+    let calificacion = req.body.calificacion;
     let matricula = req.body.matricula;
     let id_transp = req.body.id_transp;
     let marca = req.body.marca;
@@ -23,7 +24,7 @@ router.post('/signupCarrier', (req, res) => {
 
     if (nombre == "" || email == "" || contrasena == "" || apellidos == "" ||
         matricula =="" || id_transp =="" || marca=="" || modelo =="" ||
-        año =="" || precioGarrafon =="" || balance =="") {
+        año =="" || precioGarrafon =="" || balance =="" || calificacion=="") {
       res.json({
         status: "FAILED",
         message: "Empty input fields!"
@@ -56,11 +57,12 @@ router.post('/signupCarrier', (req, res) => {
             
             const newCarrier = new Carrier({
                 nombre,
-              apellidos,
-              email,
-              contrasena: hashedPassword,
-              num_contacto,
+                apellidos,
                 email,
+                contrasena: hashedPassword,
+                num_contacto,
+                email,
+                calificacion,
                 vehiculo:{
                     matricula,
                     id_transp,

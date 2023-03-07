@@ -11,7 +11,17 @@ router.post('/signupClient', (req, res) => {
     let email = req.body.email
     let contrasena = req.body.contrasena
     let num_contacto = req.body.num_contacto
-    if (nombre == "" || email == "" || contrasena == "" || apellidos == "") {
+    let calificacion = req.body.calificacion
+    let calle=req.body.calle;
+    let numero=req.body.numero;
+    let ciudad=req.body.ciudad;
+    let balance = req.body.balance;
+    let dias = req.body.dias;
+    let hora_inicial = req.body.hora_inicial;
+    let hora_final = req.body.hora_final;
+    if (nombre == "" || email == "" || contrasena == "" || apellidos == "" ||
+    calle=="" || numero=="" || ciudad=="" || balance=="" || dias=="" ||
+    hora_inicial=="" || hora_final=="" || calificacion=="") {
       res.json({
         status: "FAILED",
         message: "Empty input fields!"
@@ -28,7 +38,7 @@ router.post('/signupClient', (req, res) => {
       })
     } else {
       //Checking if user already exists
-      User.find({ email }).then(result => {
+      Client.find({ email }).then(result => {
         if (result.length) {
           // A user already exists
           res.json({
@@ -41,25 +51,37 @@ router.post('/signupClient', (req, res) => {
           //Password handling
           const saltRounds = 10;
           bcrypt.hash(contrasena, saltRounds).then(hashedPassword => {
-            const newUser = new User({
+            const newUser = new Client({
               nombre,
               apellidos,
               email,
               contrasena: hashedPassword,
-              num_contacto
+              num_contacto,
+              calificacion,
+              direccion:{
+                calle,
+                numero,
+                ciudad
+              },
+              balance,
+              horario:{
+                dias,
+                hora_inicial,
+                hora_final
+              }
             });
   
             newUser.save().then(result => {
               res.json({
                 status: "SUCCESS",
-                message: "Sign up successful!",
+                message: "Sign up (client) successful!",
                 data: result
               })
             })
               .catch(err => {
                 res.json({
                   status: "FAILED",
-                  message: "An error occurred while saving user account!"
+                  message: "An error occurred while saving user (client) account!"
                 })
               })
           })
@@ -78,9 +100,6 @@ router.post('/signupClient', (req, res) => {
           message: "An error ocurred while checking for existing user!"
         });
       });
-  
-  
-  
     }
   });
 
