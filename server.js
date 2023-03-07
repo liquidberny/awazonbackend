@@ -14,6 +14,7 @@ const bodyParser = require('express').json;
 app.use(bodyParser({
   limits: { fileSize: 3 * 1024 * 1024 }
 }));
+
 const UserRouter = require("./api/User");
 const ClientRouter = require("./api/Client")
 const CarrierRouter = require("./api/Carrier");
