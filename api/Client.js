@@ -125,7 +125,7 @@ router.put("/update", async (req, res) => {
 
 //Cambiar horario
 router.put("/updateHorario/:id", async (req, res) => {
-    const id = req.body.id;
+    const id = req.params.id;
     const dias = req.body.horario.dias;
     const hora_inicial = req.body.horario.hora_inicial;
     const hora_final = req.body.horario.hora_final;
@@ -146,7 +146,7 @@ router.put("/updateHorario/:id", async (req, res) => {
 
 //Cambiar direccion
 router.put("/updateDireccion/:id", async (req, res) => {
-    const id = req.body.id;
+    const id = req.params.id;
     const calle = req.body.horario.calle;
     const numero = req.body.horario.numero;
     const ciudad = req.body.horario.ciudad;
