@@ -156,7 +156,7 @@ router.put("/update", async (req, res) => {
 
 //edit  Vehiculo
 router.put("/updateVehiculo/:id", async (req, res) => {
-  const id = req.body.id;
+  const id = req.params.id;
   const matricula = req.body.vehiculo.matricula;
   const id_transp = req.body.vehiculo.id_transp;
   const marca = req.body.vehiculo.marca;
