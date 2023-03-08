@@ -46,3 +46,4 @@ DESARROLLO DEL PROYECTO:
         4:11 pm Jesús: Agregue el get para el cliente y carrier, tambien poder buscarlo mediante el id que tenga.
         4:06 Daniel: Agregue el codigo del endpoint edit vehiculo 
         5:02 Berny  Copie y pegue el codigo para actualizar la informacion basica de usuarios, falta un endpoint para editar el address especificamente
+        7:45 pm Berny: Inspirado en el coódigo del enpoint para editar vehiculo y horario realice el codigo para editar la direccion de cliente.

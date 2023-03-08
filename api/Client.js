@@ -144,6 +144,27 @@ router.put("/updateHorario/:id", async (req, res) => {
     }
 });
 
+//Cambiar direccion
+router.put("/updateDireccion/:id", async (req, res) => {
+    const id = req.body.id;
+    const calle = req.body.horario.calle;
+    const numero = req.body.horario.numero;
+    const ciudad = req.body.horario.ciudad;
+    try {
+        await Client.findById(id, (err, updatedDireccion) => {
+            updatedDireccion.calle = calle;
+            updatedDireccion.numero = numero;
+            updatedDireccion.ciudad = ciudad;
+            updatedDireccion.save();
+            res.send("updated");
+
+        });
+    } catch (err) {
+
+        console.log(err);
+    }
+});
+
 //Read Client
 router.get("/read/:id", async (req, res) => {
     let id = req.params.id;
