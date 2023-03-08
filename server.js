@@ -15,11 +15,11 @@ app.use(bodyParser({
   limits: { fileSize: 3 * 1024 * 1024 }
 }));
 
-const UserRouter = require("./api/User");
+// const UserRouter = require("./api/User");
 const ClientRouter = require("./api/Client")
 const CarrierRouter = require("./api/Carrier");
 
-app.use("/user", UserRouter);
+// app.use("/user", UserRouter);
 app.use("/client", ClientRouter);
 app.use('/carrier',CarrierRouter);
 
