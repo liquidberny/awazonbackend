@@ -180,5 +180,23 @@ router.put("/updateVehiculo/:id", async (req, res) => {
     console.log(err);
   }
 });
+ // update carrier status
+router.put("/updateStatus/:id", async (req, res) => {
+  const id = req.params.id;
+  const isActive = req.body.isActive;
+  if(isActive===true || isActive===false){
+    try {
+      await Carrier.findById(id, (err, updatedCarrier) => {
+        updatedCarrier.isActive = isActive;
+        updatedCarrier.save();
+        res.send("updated");
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  } else {
+    res.send("isActive is not a bool");
+  }
+});
 
 module.exports = router;

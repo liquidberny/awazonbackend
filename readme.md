@@ -47,3 +47,5 @@ DESARROLLO DEL PROYECTO:
         4:06 Daniel: Agregue el codigo del endpoint edit vehiculo 
         5:02 Berny  Copie y pegue el codigo para actualizar la informacion basica de usuarios, falta un endpoint para editar el address especificamente
         7:45 pm Berny: Inspirado en el coódigo del enpoint para editar vehiculo y horario realice el codigo para editar la direccion de cliente.
+    08/03/2023
+        1:45 pm Angel: Cree el metodo de editar el estado del Carrier (isActive) en api/Carrier.js
