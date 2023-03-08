@@ -45,3 +45,4 @@ DESARROLLO DEL PROYECTO:
         2:41 Angel: Cree un metodo para registrar un nuevo Client en api/Client.js basado en el metodo que se encuentra en api/User.js
         4:11 pm Jesús: Agregue el get para el cliente y carrier, tambien poder buscarlo mediante el id que tenga.
         4:06 Daniel: Agregue el codigo del endpoint edit vehiculo 
+        5:02 Berny  Copie y pegue el codigo para actualizar la informacion basica de usuarios, falta un endpoint para editar el address especificamente

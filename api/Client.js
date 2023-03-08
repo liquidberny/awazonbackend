@@ -100,6 +100,29 @@ router.post('/signup', (req, res) => {
     }
 });
 
+//edit client
+router.put("/update", async (req, res) => {
+    const id = req.body.id;
+    const nombre = req.body.nombre;
+    const apellidos = req.body.apellidos;
+    const email = req.body.email;
+    const contrasena = req.body.contrasena;
+    const num_contacto = req.body.num_contacto;
+    try {
+        await Client.findById(id, (err, updatedClient) => {
+            updatedClient.nombre = nombre;
+            updatedClient.apellidos = apellidos;
+            updatedClient.email = email;
+            updatedClient.contrasena = contrasena;
+            updatedClient.num_contacto = num_contacto;
+            updatedClient.save();
+            res.send("updated");
+        });
+    } catch (err) {
+        console.log(err);
+    }
+});
+
 //Cambiar horario
 router.put("/updateHorario/:id", async (req, res) => {
     const id = req.body.id;
@@ -123,24 +146,24 @@ router.put("/updateHorario/:id", async (req, res) => {
 
 //Read Client
 router.get("/read/:id", async (req, res) => {
-  let id = req.params.id;
-  await Client.findById(id).exec((err, result) => {
-    if (err) {
-      res.send(err);
-    }
-    res.send(result);
-    console.log(result);
-  });
+    let id = req.params.id;
+    await Client.findById(id).exec((err, result) => {
+        if (err) {
+            res.send(err);
+        }
+        res.send(result);
+        console.log(result);
+    });
 });
 
 //get Client
 router.get("/read", async (req, res) => {
-  Client.find({}, (err, result) => {
-    if (err) {
-      res.send(err);
-    }
-    res.send(result);
-  });
+    Client.find({}, (err, result) => {
+        if (err) {
+            res.send(err);
+        }
+        res.send(result);
+    });
 });
 
 module.exports = router;
