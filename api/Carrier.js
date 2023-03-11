@@ -184,7 +184,7 @@ router.put("/update/:id", async (req, res) => {
 });
 
 //Cambiar contraseña
-router.put("/update/:id"), async (req, res) => {
+router.put("/updatePassword/:id"), async (req, res) => {
   const id = req.params.id;
   const contrasena = req.body.contrasena;
   const confirmContrasena = req.body.confirmContrasena;
