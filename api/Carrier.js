@@ -156,17 +156,15 @@ router.put("/update/:id", async (req, res) => {
   const nombre = req.body.nombre;
   const apellidos = req.body.apellidos;
   const email = req.body.email;
-  const contrasena = req.body.contrasena;
   const num_contacto = req.body.num_contacto;
   if(id!==null || nombre!==null || apellidos!==null || email!==null || 
-    contrasena!==null || num_contacto!==null || id!=="" || nombre!=="" || apellidos!=="" 
+    num_contacto!==null || id!=="" || nombre!=="" || apellidos!=="" 
     || email!=="" || contrasena!=="" || num_contacto!==""){
       try {
         await Carrier.findById(id, (err, updatedCarrier) => {
           updatedCarrier.nombre = nombre;
           updatedCarrier.apellidos = apellidos;
           updatedCarrier.email = email;
-          updatedCarrier.contrasena = contrasena;
           updatedCarrier.num_contacto = num_contacto;
           updatedCarrier.save();
           res.json({
@@ -184,6 +182,32 @@ router.put("/update/:id", async (req, res) => {
     });
   }
 });
+
+//Cambiar contraseña
+router.put("/update/:id"), async (req, res) => {
+  const id = req.params.id;
+  const contrasena = req.body.contrasena;
+  const confirmContrasena = req.body.confirmContrasena;
+  if(contrasena == confirmContrasena){
+      try{
+          await Carrier.findById(id, (err, updatedPassword) => {
+              updatedPassword.contrasena = contrasena;
+              updatedPassword.save();
+              res.json({
+                  status:"SUCCESS",
+                  message:"Carrier successfully updated"
+              });
+          });
+      } catch (err){
+          console.log(err);
+      }
+  } else {
+      res.json({
+          status: "FAILED",
+          message: "Passwords dont match!"
+      });
+  }
+}
 
 //edit  Vehiculo
 router.put("/updateVehiculo/:id", async (req, res) => {

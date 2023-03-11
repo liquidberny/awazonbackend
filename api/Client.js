@@ -106,17 +106,15 @@ router.put("/update/:id", async (req, res) => {
     const nombre = req.body.nombre;
     const apellidos = req.body.apellidos;
     const email = req.body.email;
-    const contrasena = req.body.contrasena;
     const num_contacto = req.body.num_contacto;
     if(id!==null || nombre!==null || apellidos!==null || email!==null || 
-        contrasena!==null || num_contacto!==null || id!=="" || nombre!=="" || apellidos!=="" 
+        num_contacto!==null || id!=="" || nombre!=="" || apellidos!=="" 
         || email!=="" || contrasena!=="" || num_contacto!==""){
             try {
                 await Client.findById(id, (err, updatedClient) => {
                     updatedClient.nombre = nombre;
                     updatedClient.apellidos = apellidos;
                     updatedClient.email = email;
-                    updatedClient.contrasena = contrasena;
                     updatedClient.num_contacto = num_contacto;
                     updatedClient.save();
                     res.json({
@@ -127,8 +125,38 @@ router.put("/update/:id", async (req, res) => {
             } catch (err) {
                 console.log(err);
             }
+    } else {
+        res.json({
+            status: "FAILED",
+            message: "Empty input fields!"
+        });
     }
 });
+//Cambiar contraseña
+router.put("/update/:id"), async (req, res) => {
+    const id = req.params.id;
+    const contrasena = req.body.contrasena;
+    const confirmContrasena = req.body.confirmContrasena;
+    if(contrasena == confirmContrasena){
+        try{
+            await Client.findById(id, (err, updatedPassword) => {
+                updatedPassword.contrasena = contrasena;
+                updatedPassword.save();
+                res.json({
+                    status:"SUCCESS",
+                    message:"Client successfully updated"
+                });
+            });
+        } catch (err){
+            console.log(err);
+        }
+    } else {
+        res.json({
+            status: "FAILED",
+            message: "Passwords dont match!"
+        });
+    }
+}
 
 //Cambiar horario
 router.put("/updateHorario/:id", async (req, res) => {
