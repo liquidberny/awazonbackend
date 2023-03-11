@@ -134,8 +134,11 @@ router.get("/read/:id", async (req, res) => {
     if (err) {
       res.send(err);
     }
-    res.send(result);
-    console.log(result);
+    res.json({
+      status: "SUCCESS",
+      message: "Carrier succesfully found",
+      data: result
+    });
   });
 });
 

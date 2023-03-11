@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { Decimal128 } = require('mongoose');
 const User = require("./User");
 
 const CarrierSchema = new mongoose.Schema({
@@ -11,8 +10,8 @@ const CarrierSchema = new mongoose.Schema({
         año: { type: Number },
     },
     isActive: { type: Boolean, default: false},
-    precioGarrafon: Decimal128,
-    balance: Decimal128,
+    precioGarrafon: { type: Number },
+    balance: { type: Number },
 });
 
 CarrierSchema.add(User.schema);
