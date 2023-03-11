@@ -11,14 +11,11 @@ router.post("/signup", (req, res) => {
   let email = req.body.email;
   let contrasena = req.body.contrasena;
   let num_contacto = req.body.num_contacto;
-  let calificacion = req.body.calificacion;
   let matricula = req.body.matricula;
-  let id_transp = req.body.id_transp;
   let marca = req.body.marca;
   let modelo = req.body.modelo;
-  let año = req.body.año;
+  let color = req.body.color;
   let precioGarrafon = req.body.precioGarrafon;
-  let balance = req.body.balance;
 
   if (
     nombre == "" ||
@@ -26,13 +23,10 @@ router.post("/signup", (req, res) => {
     contrasena == "" ||
     apellidos == "" ||
     matricula == "" ||
-    id_transp == "" ||
     marca == "" ||
     modelo == "" ||
-    año == "" ||
-    precioGarrafon == "" ||
-    balance == "" ||
-    calificacion == ""
+    color == "" ||
+    precioGarrafon == "" 
   ) {
     res.json({
       status: "FAILED",
@@ -87,7 +81,7 @@ router.post("/signup", (req, res) => {
                   id_transp,
                   marca,
                   modelo,
-                  año,
+                  color,
                 },
                 precioGarrafon,
                 balance,
@@ -181,14 +175,14 @@ router.put("/updateVehiculo/:id", async (req, res) => {
   const id_transp = req.body.vehiculo.id_transp;
   const marca = req.body.vehiculo.marca;
   const modelo = req.body.vehiculo.modelo;
-  const año = req.body.vehiculo.año;
+  const color = req.body.vehiculo.color;
   try {
     await Carrier.findById(id, (err, updatedVehiculo) => {
       updatedVehiculo.matricula = matricula;
       updatedVehiculo.id_transp = id_transp;
       updatedVehiculo.marca = marca;
       updatedVehiculo.modelo = modelo;
-      updatedVehiculo.año = año;
+      updatedVehiculo.color = color;
 
       updatedVehiculo.save();
       res.send("updated");
