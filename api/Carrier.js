@@ -74,17 +74,13 @@ router.post("/signup", (req, res) => {
                 email,
                 contrasena: hashedPassword,
                 num_contacto,
-                email,
-                calificacion,
                 vehiculo: {
                   matricula,
-                  id_transp,
                   marca,
                   modelo,
                   color,
                 },
                 precioGarrafon,
-                balance,
               });
 
               newCarrier
