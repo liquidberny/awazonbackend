@@ -26,7 +26,7 @@ router.post("/signup", (req, res) => {
     marca == "" ||
     modelo == "" ||
     color == "" ||
-    precioGarrafon == "" 
+    precioGarrafon == ""
   ) {
     res.json({
       status: "FAILED",
@@ -144,9 +144,9 @@ router.get("/read", async (req, res) => {
     }
     //res.send(result);
     res.send({
-      status:"SUCCESS",
+      status: "SUCCESS",
       message: "Carrier successfully obtained",
-      data:result
+      data: result
     });
   });
 });
@@ -156,33 +156,56 @@ router.put("/update/:id", async (req, res) => {
   const nombre = req.body.nombre;
   const apellidos = req.body.apellidos;
   const email = req.body.email;
-  const contrasena = req.body.contrasena;
   const num_contacto = req.body.num_contacto;
-  if(id!==null || nombre!==null || apellidos!==null || email!==null || 
-    contrasena!==null || num_contacto!==null || id!=="" || nombre!=="" || apellidos!=="" 
-    || email!=="" || contrasena!=="" || num_contacto!==""){
-      try {
-        await Carrier.findById(id, (err, updatedCarrier) => {
-          updatedCarrier.nombre = nombre;
-          updatedCarrier.apellidos = apellidos;
-          updatedCarrier.email = email;
-          updatedCarrier.contrasena = contrasena;
-          updatedCarrier.num_contacto = num_contacto;
-          updatedCarrier.save();
-          res.json({
-            status:"SUCCESS",
-            message:"Carrier successfully updated"
-          });
+  if (id !== null || nombre !== null || apellidos !== null || email !== null ||
+    num_contacto !== null || id !== "" || nombre !== "" || apellidos !== ""
+    || email !== "" || contrasena !== "" || num_contacto !== "") {
+    try {
+      await Carrier.findById(id, (err, updatedCarrier) => {
+        updatedCarrier.nombre = nombre;
+        updatedCarrier.apellidos = apellidos;
+        updatedCarrier.email = email;
+        updatedCarrier.num_contacto = num_contacto;
+        updatedCarrier.save();
+        res.json({
+          status: "SUCCESS",
+          message: "Carrier successfully updated"
         });
-      } catch (err) {
-        console.log(err);
-      }
+      });
+    } catch (err) {
+      console.log(err);
+    }
   } else {
     res.json({
       status: "FAILED",
       message: "Empty input fields!",
     });
   }
+});
+
+//Cambiar contraseña
+router.put('/:userId/updatePassword', async (req, res) => {
+  const userId = req.params.userId;
+  const newPassword = req.body.password;
+
+  const saltRounds = 10;
+  const hashed = await bcrypt.hash(newPassword, saltRounds)
+  Carrier.findOneAndUpdate(
+    { _id: userId },
+    { contrasena: hashed },
+    { new: true }
+  )
+    .then(updatedUser => {
+      res.json({
+        status: "SUCCESS",
+        message: "Carrier successfully updated",
+        data: updatedUser
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ error: 'An error ocurred while changing password' });
+    });
 });
 
 //edit  Vehiculo
@@ -203,26 +226,26 @@ router.put("/updateVehiculo/:id", async (req, res) => {
 
       updatedVehiculo.save();
       res.json({
-        status:"SUCCESS",
-        message:"Carrier's vehicle successfully updated"
+        status: "SUCCESS",
+        message: "Carrier's vehicle successfully updated"
       });
     });
   } catch (err) {
     console.log(err);
   }
 });
- // update carrier status
+// update carrier status
 router.put("/updateStatus/:id", async (req, res) => {
   const id = req.params.id;
   const isActive = req.body.isActive;
-  if(isActive===true || isActive===false){
+  if (isActive === true || isActive === false) {
     try {
       await Carrier.findById(id, (err, updatedCarrier) => {
         updatedCarrier.isActive = isActive;
         updatedCarrier.save();
         res.json({
-          status:"SUCCESS",
-          message:"Carrier's status successfully updated"
+          status: "SUCCESS",
+          message: "Carrier's status successfully updated"
         });
       });
     } catch (err) {
@@ -230,23 +253,23 @@ router.put("/updateStatus/:id", async (req, res) => {
     }
   } else {
     res.json({
-      status:"FAILED",
-      message:"Invalid data type"
+      status: "FAILED",
+      message: "Invalid data type"
     });
   }
 });
 
 //get Active Carriers
 router.get("/readActive", async (req, res) => {
-  Carrier.find({isActive: true}, (err, result) => {
+  Carrier.find({ isActive: true }, (err, result) => {
     if (err) {
       res.send(err);
     }
     //res.send(result);
     res.json({
-      status:"SUCCESS",
-      message:"Active carriers successfully obtained",
-      data:result
+      status: "SUCCESS",
+      message: "Active carriers successfully obtained",
+      data: result
     });
   });
 });
