@@ -142,29 +142,46 @@ router.get("/read", async (req, res) => {
     if (err) {
       res.send(err);
     }
-    res.send(result);
+    //res.send(result);
+    res.send({
+      status:"SUCCESS",
+      message: "Carrier successfully obtained",
+      data:result
+    });
   });
 });
 //edit carrier
-router.put("/update", async (req, res) => {
-  const id = req.body.id;
+router.put("/update/:id", async (req, res) => {
+  const id = req.params.id;
   const nombre = req.body.nombre;
   const apellidos = req.body.apellidos;
   const email = req.body.email;
   const contrasena = req.body.contrasena;
   const num_contacto = req.body.num_contacto;
-  try {
-    await Carrier.findById(id, (err, updatedCarrier) => {
-      updatedCarrier.nombre = nombre;
-      updatedCarrier.apellidos = apellidos;
-      updatedCarrier.email = email;
-      updatedCarrier.contrasena = contrasena;
-      updatedCarrier.num_contacto = num_contacto;
-      updatedCarrier.save();
-      res.send("updated");
+  if(id!==null || nombre!==null || apellidos!==null || email!==null || 
+    contrasena!==null || num_contacto!==null || id!=="" || nombre!=="" || apellidos!=="" 
+    || email!=="" || contrasena!=="" || num_contacto!==""){
+      try {
+        await Carrier.findById(id, (err, updatedCarrier) => {
+          updatedCarrier.nombre = nombre;
+          updatedCarrier.apellidos = apellidos;
+          updatedCarrier.email = email;
+          updatedCarrier.contrasena = contrasena;
+          updatedCarrier.num_contacto = num_contacto;
+          updatedCarrier.save();
+          res.json({
+            status:"SUCCESS",
+            message:"Carrier successfully updated"
+          });
+        });
+      } catch (err) {
+        console.log(err);
+      }
+  } else {
+    res.json({
+      status: "FAILED",
+      message: "Empty input fields!",
     });
-  } catch (err) {
-    console.log(err);
   }
 });
 
@@ -178,14 +195,17 @@ router.put("/updateVehiculo/:id", async (req, res) => {
   const color = req.body.vehiculo.color;
   try {
     await Carrier.findById(id, (err, updatedVehiculo) => {
-      updatedVehiculo.matricula = matricula;
-      updatedVehiculo.id_transp = id_transp;
-      updatedVehiculo.marca = marca;
-      updatedVehiculo.modelo = modelo;
-      updatedVehiculo.color = color;
+      updatedVehiculo.vehiculo.matricula = matricula;
+      updatedVehiculo.vehiculo.id_transp = id_transp;
+      updatedVehiculo.vehiculo.marca = marca;
+      updatedVehiculo.vehiculo.modelo = modelo;
+      updatedVehiculo.vehiculo.color = color;
 
       updatedVehiculo.save();
-      res.send("updated");
+      res.json({
+        status:"SUCCESS",
+        message:"Carrier's vehicle successfully updated"
+      });
     });
   } catch (err) {
     console.log(err);
@@ -200,13 +220,19 @@ router.put("/updateStatus/:id", async (req, res) => {
       await Carrier.findById(id, (err, updatedCarrier) => {
         updatedCarrier.isActive = isActive;
         updatedCarrier.save();
-        res.send("updated");
+        res.json({
+          status:"SUCCESS",
+          message:"Carrier's status successfully updated"
+        });
       });
     } catch (err) {
       console.log(err);
     }
   } else {
-    res.send("isActive is not a bool");
+    res.json({
+      status:"FAILED",
+      message:"Invalid data type"
+    });
   }
 });
 
@@ -216,7 +242,12 @@ router.get("/readActive", async (req, res) => {
     if (err) {
       res.send(err);
     }
-    res.send(result);
+    //res.send(result);
+    res.json({
+      status:"SUCCESS",
+      message:"Active carriers successfully obtained",
+      data:result
+    });
   });
 });
 

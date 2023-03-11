@@ -50,3 +50,14 @@ DESARROLLO DEL PROYECTO:
     08/03/2023
         1:45 pm Angel: Cree el metodo de editar el estado del Carrier (isActive) en api/Carrier.js
         2:55 pm Jesús: Obtuve los carriers que nada mas estan activos.
+    10/03/2023
+        7:54 pm Angel: Modificado el metodo de editar carrier en api/Carriers.js
+                        Antes: router.put("/update"...)...
+                        Ahora: router.put("/update/:id"...)...
+        7:56 pm Angel: Agregado en el metodo de editar carrier una condicional para evitar campos vacios
+        8:00 pm Angel: Modificado el metodo de editar cliente en api/Client.js
+                        Antes: router.put("/update"...)...
+                        Ahora: router.put("/update/:id"...)...
+        8:02 pm Angel: Agregado en el metodo de editar carrier una condicional para evitar campos vacios
+        9:18 pm Angel: Arregle algunos errores al momento de hacer el update que implicaban objetos como vehiculo (carrier), horario (cliente) y direccion (cliente).
+        9:20 pm Angel: Actualizado los datos que muestran cuando responde un endpoint en api/Carrier.js y api/Client.js
