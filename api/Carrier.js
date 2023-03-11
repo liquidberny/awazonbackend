@@ -92,7 +92,7 @@ router.post("/signup", (req, res) => {
                 .then((result) => {
                   res.json({
                     status: "SUCCESS",
-                    message: "depende de la situacion",
+                    message: "Sign Up Succesful",
                     data: result,
                   });
                 })
