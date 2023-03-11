@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { Decimal128 } = require('mongoose');
 const User = require("./User");
 
 const ClientSchema = new mongoose.Schema({
@@ -9,7 +8,7 @@ const ClientSchema = new mongoose.Schema({
         ciudad: { type: String },
     },
     
-    balance: Decimal128,
+    balance: { type: Number },
     horario: {
         dias:[{type: Number}],
         hora_inicial:{type: Number},

@@ -11,6 +11,7 @@ router.post("/signup", (req, res) => {
   let email = req.body.email;
   let contrasena = req.body.contrasena;
   let num_contacto = req.body.num_contacto;
+  let calificacion = 1;
   let matricula = req.body.matricula;
   let marca = req.body.marca;
   let modelo = req.body.modelo;
@@ -74,6 +75,7 @@ router.post("/signup", (req, res) => {
                 email,
                 contrasena: hashedPassword,
                 num_contacto,
+                calificacion,
                 vehiculo: {
                   matricula,
                   marca,
