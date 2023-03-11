@@ -101,25 +101,32 @@ router.post('/signup', (req, res) => {
 });
 
 //edit client
-router.put("/update", async (req, res) => {
-    const id = req.body.id;
+router.put("/update/:id", async (req, res) => {
+    const id = req.params.id;
     const nombre = req.body.nombre;
     const apellidos = req.body.apellidos;
     const email = req.body.email;
     const contrasena = req.body.contrasena;
     const num_contacto = req.body.num_contacto;
-    try {
-        await Client.findById(id, (err, updatedClient) => {
-            updatedClient.nombre = nombre;
-            updatedClient.apellidos = apellidos;
-            updatedClient.email = email;
-            updatedClient.contrasena = contrasena;
-            updatedClient.num_contacto = num_contacto;
-            updatedClient.save();
-            res.send("updated");
-        });
-    } catch (err) {
-        console.log(err);
+    if(id!==null || nombre!==null || apellidos!==null || email!==null || 
+        contrasena!==null || num_contacto!==null || id!=="" || nombre!=="" || apellidos!=="" 
+        || email!=="" || contrasena!=="" || num_contacto!==""){
+            try {
+                await Client.findById(id, (err, updatedClient) => {
+                    updatedClient.nombre = nombre;
+                    updatedClient.apellidos = apellidos;
+                    updatedClient.email = email;
+                    updatedClient.contrasena = contrasena;
+                    updatedClient.num_contacto = num_contacto;
+                    updatedClient.save();
+                    res.json({
+                        status:"SUCCESS",
+                        message:"Client successfully updated"
+                    });
+                });
+            } catch (err) {
+                console.log(err);
+            }
     }
 });
 
@@ -131,11 +138,14 @@ router.put("/updateHorario/:id", async (req, res) => {
     const hora_final = req.body.horario.hora_final;
     try {
         await Client.findById(id, (err, updatedHorario) => {
-            updatedHorario.dias = dias;
-            updatedHorario.hora_inicial = hora_inicial;
-            updatedHorario.hora_final = hora_final;
+            updatedHorario.horario.dias = dias;
+            updatedHorario.horario.hora_inicial = hora_inicial;
+            updatedHorario.horario.hora_final = hora_final;
             updatedHorario.save();
-            res.send("updated");
+            res.json({
+                status:"SUCCESS",
+                message:"Client's schedule successfully updated"
+            });
 
         });
     } catch (err) {
@@ -147,20 +157,23 @@ router.put("/updateHorario/:id", async (req, res) => {
 //Cambiar direccion
 router.put("/updateDireccion/:id", async (req, res) => {
     const id = req.params.id;
-    const calle = req.body.horario.calle;
-    const numero = req.body.horario.numero;
-    const ciudad = req.body.horario.ciudad;
+    const calle = req.body.direccion.calle;
+    const numero = req.body.direccion.numero;
+    const ciudad = req.body.direccion.ciudad;
     try {
         await Client.findById(id, (err, updatedDireccion) => {
-            updatedDireccion.calle = calle;
-            updatedDireccion.numero = numero;
-            updatedDireccion.ciudad = ciudad;
+            console.log(req.body);
+            updatedDireccion.direccion.calle = calle;
+            updatedDireccion.direccion.numero = numero;
+            updatedDireccion.direccion.ciudad = ciudad;
             updatedDireccion.save();
-            res.send("updated");
-
+            //res.send("updated");
+            res.json({
+                status:"SUCCESS",
+                message:"Client's direction successfully updated"
+            });
         });
     } catch (err) {
-
         console.log(err);
     }
 });
@@ -172,7 +185,12 @@ router.get("/read/:id", async (req, res) => {
         if (err) {
             res.send(err);
         }
-        res.send(result);
+        //res.send(result);
+        res.json({
+            status:"SUCCESS",
+            message:"Client successfully obtained",
+            data:result
+        });
         console.log(result);
     });
 });
@@ -183,7 +201,11 @@ router.get("/read", async (req, res) => {
         if (err) {
             res.send(err);
         }
-        res.send(result);
+        res.json({
+            status:"SUCCESS",
+            message:"Client successfully obtained",
+            data:result
+        });
     });
 });
 

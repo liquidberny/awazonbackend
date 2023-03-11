@@ -46,6 +46,17 @@ El database user para leer y escribir a cualquier base de datos es: <b>"awasonoc
          &emsp;<b>4:06 Daniel:</b> Agregue el codigo del endpoint edit vehiculo</br> 
          &emsp;<b>5:02 Berny:</b> Copie y pegue el codigo para actualizar la informacion basica de usuarios, falta un endpoint para editar el address especificamente</br>
          &emsp;<b>7:45 pm Berny:</b> Inspirado en el coódigo del enpoint para editar vehiculo y horario realice el codigo para editar la direccion de cliente.</p>
-    <p><i><b>08/03/2023</p></i></b>
+        <p><i><b>08/03/2023</p></i></b>
         &emsp;<b>1:45 pm Angel:</b> Cree el metodo de editar el estado del Carrier (isActive) en api/Carrier.js</br>
         &emsp;<b>2:55 pm Jesús:</b> Obtuve los carriers que nada mas estan activos.
+    <p><i><b>10/03/2023</b></i></p>
+        &emsp;<b>7:54 pm Angel:</b> Modificado el metodo de editar carrier en api/Carriers.js
+                        Antes: router.put("/update"...)...
+                        Ahora: router.put("/update/:id"...)...
+        &emsp;<b>7:56 pm Angel:</b> Agregado en el metodo de editar carrier una condicional para evitar campos vacios
+        &emsp;<b>8:00 pm Angel:</b> Modificado el metodo de editar cliente en api/Client.js</br>
+                        <b>Antes:</b> router.put("/update"...)...</br>
+                        <b>Ahora:</b> router.put("/update/:id"...)...</br>
+        &emsp;<b>8:02 pm Angel:</b> Agregado en el metodo de editar carrier una condicional para evitar campos vacios</br>
+        &emsp;<b>9:18 pm Angel:</b> Arregle algunos errores al momento de hacer el update que implicaban objetos como vehiculo (carrier), horario (cliente) y direccion (cliente).
+        9:20 pm Angel: Actualizado los datos que muestran cuando responde un endpoint en api/Carrier.js y api/Client.js
