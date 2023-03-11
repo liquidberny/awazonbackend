@@ -212,14 +212,12 @@ router.put('/:userId/updatePassword', async (req, res) => {
 router.put("/updateVehiculo/:id", async (req, res) => {
   const id = req.params.id;
   const matricula = req.body.vehiculo.matricula;
-  const id_transp = req.body.vehiculo.id_transp;
   const marca = req.body.vehiculo.marca;
   const modelo = req.body.vehiculo.modelo;
   const color = req.body.vehiculo.color;
   try {
     await Carrier.findById(id, (err, updatedVehiculo) => {
       updatedVehiculo.vehiculo.matricula = matricula;
-      updatedVehiculo.vehiculo.id_transp = id_transp;
       updatedVehiculo.vehiculo.marca = marca;
       updatedVehiculo.vehiculo.modelo = modelo;
       updatedVehiculo.vehiculo.color = color;
