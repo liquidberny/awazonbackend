@@ -182,6 +182,31 @@ router.put("/updateHorario/:id", async (req, res) => {
     }
 });
 
+//Cambiar contraseña
+router.put('/:userId/updatePassword', async (req, res) => {
+    const userId = req.params.userId;
+    const newPassword = req.body.password;
+  
+    const saltRounds = 10;
+    const hashed = await bcrypt.hash(newPassword, saltRounds)
+    Client.findOneAndUpdate(
+      { _id: userId },
+      { contrasena: hashed },
+      { new: true }
+    )
+      .then(updatedUser => {
+        res.json({
+          status: "SUCCESS",
+          message: "Client successfully updated",
+          data: updatedUser
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        res.status(500).json({ error: 'An error ocurred while changing password' });
+      });
+  });
+
 //Cambiar direccion
 router.put("/updateDireccion/:id", async (req, res) => {
     const id = req.params.id;
