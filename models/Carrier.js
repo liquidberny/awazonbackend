@@ -4,10 +4,9 @@ const User = require("./User");
 const CarrierSchema = new mongoose.Schema({
     vehiculo: {
         matricula: { type: String },
-        id_transp: { type: Number },
         marca: { type: String },
         modelo: { type: String },
-        año: { type: Number },
+        color: { type: String },
     },
     isActive: { type: Boolean, default: false},
     precioGarrafon: { type: Number },
