@@ -278,10 +278,10 @@ router.put('/:userId/updatePrecioGarrafon', async (req, res) => {
   const userId = req.params.userId;
   const precioGarrafon = req.body.precioGarrafon;
 
-  const hashed = await (precioGarrafon)  
+  
   Carrier.findOneAndUpdate(
     { _id: userId },
-    { precioGarrafon: hashed }
+    { precioGarrafon: precioGarrafon }
   )
     .then(updatedP => {
       res.json({
