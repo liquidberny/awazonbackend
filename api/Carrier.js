@@ -271,4 +271,31 @@ router.get("/readActive", async (req, res) => {
   });
 });
 
+
+  
+//Cambiar precio garrafon
+router.put('/:userId/updatePrecioGarrafon', async (req, res) => {
+  const userId = req.params.userId;
+  const precioGarrafon = req.body.precioGarrafon;
+
+  
+  Carrier.findOneAndUpdate(
+    { _id: userId },
+    { precioGarrafon: precioGarrafon }
+  )
+    .then(updatedP => {
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha podido cambiar el precio del garrafon",
+        data: updatedP
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ 
+        status:"ERROR",
+        message:"No se pudo cambiar el precio del garrafon." 
+      });
+    });
+});
 module.exports = router;
