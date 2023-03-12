@@ -121,7 +121,8 @@ router.put("/update/:id", async (req, res) => {
                     updatedClient.save();
                     res.json({
                         status:"SUCCESS",
-                        message:"Client successfully updated"
+                        message:"Client successfully updated",
+                        data: updatedClient
                     });
                 });
             } catch (err) {

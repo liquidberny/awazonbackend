@@ -167,7 +167,8 @@ router.put("/update/:id", async (req, res) => {
         updatedCarrier.save();
         res.json({
           status: "SUCCESS",
-          message: "Carrier successfully updated"
+          message: "Carrier successfully updated",
+          data: updatedCarrier
         });
       });
     } catch (err) {
