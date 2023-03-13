@@ -119,6 +119,60 @@ router.post("/signup", (req, res) => {
   }
 });
 
+//Signin
+router.post('/signin', (req, res) => {
+  let { email, contrasena } = req.body;
+  email = email.trim();
+  contrasena = contrasena.trim();
+
+  if (email == "" || contrasena == "") {
+      res.json({
+          status: "FAILED",
+          message: "Empty credentials supplied"
+      })
+  } else {
+      //Checks if the carrier exists
+      Carrier.find({ email })
+          .then(data => {
+              if (data.length) {
+                  //Carrier exists
+                  const hashedPassword = data[0].contrasena;
+                  bcrypt.compare(contrasena, hashedPassword).then(result => {
+                      if (result) {
+                          //Password match
+                          res.json({
+                              status: "SUCCESS",
+                              message: "Signin successful",
+                              data: data
+                          })
+                      } else {
+                          res.json({
+                              status: "FAILED",
+                              message: "Invalid contrasena entered"
+                          })
+                      }
+                  })
+                      .catch(err => {
+                          res.json({
+                              status: "FAILED",
+                              message: "An error occurred while comparing passwords"
+                          });
+                      });
+              } else {
+                  res.json({
+                      status: "FAILED",
+                      message: "Invalid credentials entered!"
+                  })
+              }
+          })
+          .catch(err => {
+              res.json({
+                  status: "FAILED",
+                  message: "An error occured while checking for existing user"
+              });
+          })
+  }
+})
 //Read Carrier
 router.get("/read/:id", async (req, res) => {
   let id = req.params.id;
