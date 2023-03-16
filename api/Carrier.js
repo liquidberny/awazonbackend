@@ -212,22 +212,32 @@ router.put("/update/:id", async (req, res) => {
   if (id !== null || nombre !== null || apellidos !== null || email !== null ||
     num_contacto !== null || id !== "" || nombre !== "" || apellidos !== ""
     || email !== "" || contrasena !== "" || num_contacto !== "") {
-    try {
-      await Carrier.findById(id, (err, updatedCarrier) => {
-        updatedCarrier.nombre = nombre;
-        updatedCarrier.apellidos = apellidos;
-        updatedCarrier.email = email;
-        updatedCarrier.num_contacto = num_contacto;
-        updatedCarrier.save();
+    Carrier.find({email}).then(async (result) =>  {
+      if(result.length){
         res.json({
-          status: "SUCCESS",
-          message: "Carrier successfully updated",
-          data: updatedCarrier
+          status:"FAILED",
+          message:"User with the provided email already exists"
         });
-      });
-    } catch (err) {
-      console.log(err);
-    }
+      } else {
+        try {
+          await Carrier.findById(id, (err, updatedCarrier) => {
+            updatedCarrier.nombre = nombre;
+            updatedCarrier.apellidos = apellidos;
+            updatedCarrier.email = email;
+            updatedCarrier.num_contacto = num_contacto;
+            updatedCarrier.save();
+            res.json({
+              status: "SUCCESS",
+              message: "Carrier successfully updated",
+              data: updatedCarrier
+            });
+          });
+        } catch (err) {
+          console.log(err);
+        }
+      }
+    });
+      
   } else {
     res.json({
       status: "FAILED",

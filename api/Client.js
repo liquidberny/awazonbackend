@@ -165,22 +165,31 @@ router.put("/update/:id", async (req, res) => {
     if(id!==null || nombre!==null || apellidos!==null || email!==null || 
         num_contacto!==null || id!=="" || nombre!=="" || apellidos!=="" 
         || email!=="" || contrasena!=="" || num_contacto!==""){
-            try {
-                await Client.findById(id, (err, updatedClient) => {
-                    updatedClient.nombre = nombre;
-                    updatedClient.apellidos = apellidos;
-                    updatedClient.email = email;
-                    updatedClient.num_contacto = num_contacto;
-                    updatedClient.save();
-                    res.json({
-                        status:"SUCCESS",
-                        message:"Client successfully updated",
-                        data: updatedClient
+            Client.find({email}).then(async (result) =>  {
+                if(result.length){
+                  res.json({
+                    status:"FAILED",
+                    message:"User with the provided email already exists"
+                  });
+                } else {
+                    try {
+                        await Client.findById(id, (err, updatedClient) => {
+                        updatedClient.nombre = nombre;
+                        updatedClient.apellidos = apellidos;
+                        updatedClient.email = email;
+                        updatedClient.num_contacto = num_contacto;
+                        updatedClient.save();
+                        res.json({
+                            status:"SUCCESS",
+                            message:"Client successfully updated",
+                            data: updatedClient
+                     });
                     });
-                });
-            } catch (err) {
-                console.log(err);
+                } catch (err) {
+                   console.log(err);
+                }
             }
+        });
     } else {
         res.json({
             status: "FAILED",
