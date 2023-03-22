@@ -16,7 +16,7 @@ router.post('/signup', (req, res) => {
     let numero = req.body.numero;
     let ciudad = req.body.ciudad;
     let colonia = req.body.colonia;
-    let codigo_postal = rec.body.codigo_postal;
+    let codigo_postal = req.body.codigo_postal;
     let dias = req.body.dias;
     let hora_inicial = req.body.hora_inicial;
     let hora_final = req.body.hora_final;
@@ -283,7 +283,7 @@ router.put("/updateDireccion/:id", async (req, res) => {
     const numero = req.body.direccion.numero;
     const ciudad = req.body.direccion.ciudad;
     const colonia = req.body.colonia;
-    const codigo_postal = rec.body.codigo_postal;
+    const codigo_postal = req.body.codigo_postal; 
     try {
         await Client.findById(id, (err, updatedDireccion) => {
             console.log(req.body);
@@ -318,7 +318,6 @@ router.get("/read/:id", async (req, res) => {
             message: "Client successfully obtained",
             data: result
         });
-        console.log(result);
     });
 });
 
