@@ -169,30 +169,39 @@ router.put("/update/:id", async (req, res) => {
     if (id !== null || nombre !== null || apellidos !== null || email !== null ||
         num_contacto !== null || id !== "" || nombre !== "" || apellidos !== ""
         || email !== "" || contrasena !== "" || num_contacto !== "") {
+        
         Client.find({ email }).then(async (result) => {
-            if (result.length) {
-                res.json({
-                    status: "FAILED",
-                    message: "User with the provided email already exists"
-                });
-            } else {
+            //console.log(result[0].email);
                 try {
+                    console.log(result.length);
                     await Client.findById(id, (err, updatedClient) => {
-                        updatedClient.nombre = nombre;
-                        updatedClient.apellidos = apellidos;
-                        updatedClient.email = email;
-                        updatedClient.num_contacto = num_contacto;
-                        updatedClient.save();
-                        res.json({
-                            status: "SUCCESS",
-                            message: "Client successfully updated",
-                            data: updatedClient
-                        });
+                        var same_email = false;
+                        if (updatedClient.email===email) {
+                            same_email=true
+                        } 
+                        if (result.length!=0 && same_email===false) {
+                            res.json({
+                                status: "FAILED",
+                                message: "User with the provided email already exists"
+                            });
+                        } else {
+                            updatedClient.nombre = nombre;
+                            updatedClient.apellidos = apellidos;
+                            updatedClient.email = email;
+                            updatedClient.num_contacto = num_contacto;
+                            updatedClient.save();
+                            res.json({
+                                status: "SUCCESS",
+                                message: "Client successfully updated",
+                                data: updatedClient
+                            });
+                        }
+                        same_email=false;
                     });
                 } catch (err) {
                     console.log(err);
                 }
-            }
+            
         });
     } else {
         res.json({
