@@ -6,6 +6,8 @@ const ClientSchema = new mongoose.Schema({
         calle: { type: String },
         numero: { type: Number },
         ciudad: { type: String },
+        colonia: { type: String },
+        codigo_postal: { type: Number },
     },
     
     balance: { type: Number },

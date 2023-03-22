@@ -15,13 +15,15 @@ router.post('/signup', (req, res) => {
     let calle = req.body.calle;
     let numero = req.body.numero;
     let ciudad = req.body.ciudad;
+    let colonia = req.body.colonia;
+    let codigo_postal = req.body.codigo_postal;
     let dias = req.body.dias;
     let hora_inicial = req.body.hora_inicial;
     let hora_final = req.body.hora_final;
 
     if (nombre == "" || email == "" || contrasena == "" || apellidos == "" ||
         calle == "" || numero == "" || ciudad == "" || dias == "" ||
-        hora_inicial == "" || hora_final == "") {
+        hora_inicial == "" || hora_final == "" || colonia == "" || codigo_postal == "") {
         res.json({
             status: "FAILED",
             message: "Empty input fields!"
@@ -61,7 +63,9 @@ router.post('/signup', (req, res) => {
                         direccion: {
                             calle,
                             numero,
-                            ciudad
+                            ciudad,
+                            colonia,
+                            codigo_postal
                         },
                         horario: {
                             dias,
@@ -106,7 +110,7 @@ router.post('/signin', (req, res) => {
     let { email, contrasena } = req.body;
     email = email.trim();
     contrasena = contrasena.trim();
-  
+
     if (email == "" || contrasena == "") {
         res.json({
             status: "FAILED",
@@ -154,7 +158,7 @@ router.post('/signin', (req, res) => {
                 });
             })
     }
-  })
+})
 //edit client
 router.put("/update/:id", async (req, res) => {
     const id = req.params.id;
@@ -162,31 +166,31 @@ router.put("/update/:id", async (req, res) => {
     const apellidos = req.body.apellidos;
     const email = req.body.email;
     const num_contacto = req.body.num_contacto;
-    if(id!==null || nombre!==null || apellidos!==null || email!==null || 
-        num_contacto!==null || id!=="" || nombre!=="" || apellidos!=="" 
-        || email!=="" || contrasena!=="" || num_contacto!==""){
-            Client.find({email}).then(async (result) =>  {
-                if(result.length){
-                  res.json({
-                    status:"FAILED",
-                    message:"User with the provided email already exists"
-                  });
-                } else {
-                    try {
-                        await Client.findById(id, (err, updatedClient) => {
+    if (id !== null || nombre !== null || apellidos !== null || email !== null ||
+        num_contacto !== null || id !== "" || nombre !== "" || apellidos !== ""
+        || email !== "" || contrasena !== "" || num_contacto !== "") {
+        Client.find({ email }).then(async (result) => {
+            if (result.length) {
+                res.json({
+                    status: "FAILED",
+                    message: "User with the provided email already exists"
+                });
+            } else {
+                try {
+                    await Client.findById(id, (err, updatedClient) => {
                         updatedClient.nombre = nombre;
                         updatedClient.apellidos = apellidos;
                         updatedClient.email = email;
                         updatedClient.num_contacto = num_contacto;
                         updatedClient.save();
                         res.json({
-                            status:"SUCCESS",
-                            message:"Client successfully updated",
+                            status: "SUCCESS",
+                            message: "Client successfully updated",
                             data: updatedClient
-                     });
+                        });
                     });
                 } catch (err) {
-                   console.log(err);
+                    console.log(err);
                 }
             }
         });
@@ -202,17 +206,17 @@ router.put("/updatePassword/:id"), async (req, res) => {
     const id = req.params.id;
     const contrasena = req.body.contrasena;
     const confirmContrasena = req.body.confirmContrasena;
-    if(contrasena == confirmContrasena){
-        try{
+    if (contrasena == confirmContrasena) {
+        try {
             await Client.findById(id, (err, updatedPassword) => {
                 updatedPassword.contrasena = contrasena;
                 updatedPassword.save();
                 res.json({
-                    status:"SUCCESS",
-                    message:"Client successfully updated"
+                    status: "SUCCESS",
+                    message: "Client successfully updated"
                 });
             });
-        } catch (err){
+        } catch (err) {
             console.log(err);
         }
     } else {
@@ -236,8 +240,8 @@ router.put("/updateHorario/:id", async (req, res) => {
             updatedHorario.horario.hora_final = hora_final;
             updatedHorario.save();
             res.json({
-                status:"SUCCESS",
-                message:"Client's schedule successfully updated"
+                status: "SUCCESS",
+                message: "Client's schedule successfully updated"
             });
 
         });
@@ -251,26 +255,26 @@ router.put("/updateHorario/:id", async (req, res) => {
 router.put('/:userId/updatePassword', async (req, res) => {
     const userId = req.params.userId;
     const newPassword = req.body.password;
-  
+
     const saltRounds = 10;
     const hashed = await bcrypt.hash(newPassword, saltRounds)
     Client.findOneAndUpdate(
-      { _id: userId },
-      { contrasena: hashed },
-      { new: true }
+        { _id: userId },
+        { contrasena: hashed },
+        { new: true }
     )
-      .then(updatedUser => {
-        res.json({
-          status: "SUCCESS",
-          message: "Client successfully updated",
-          data: updatedUser
+        .then(updatedUser => {
+            res.json({
+                status: "SUCCESS",
+                message: "Client successfully updated",
+                data: updatedUser
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ error: 'An error ocurred while changing password' });
         });
-      })
-      .catch(err => {
-        console.error(err);
-        res.status(500).json({ error: 'An error ocurred while changing password' });
-      });
-  });
+});
 
 //Cambiar direccion
 router.put("/updateDireccion/:id", async (req, res) => {
@@ -278,17 +282,22 @@ router.put("/updateDireccion/:id", async (req, res) => {
     const calle = req.body.direccion.calle;
     const numero = req.body.direccion.numero;
     const ciudad = req.body.direccion.ciudad;
+    const colonia = req.body.colonia;
+    const codigo_postal = req.body.codigo_postal; 
     try {
         await Client.findById(id, (err, updatedDireccion) => {
             console.log(req.body);
             updatedDireccion.direccion.calle = calle;
             updatedDireccion.direccion.numero = numero;
             updatedDireccion.direccion.ciudad = ciudad;
+            updatedDireccion.direccion.colonia = colonia;
+            updatedDireccion.direccion.codigo_postal = codigo_postal;
+
             updatedDireccion.save();
             //res.send("updated");
             res.json({
-                status:"SUCCESS",
-                message:"Client's direction successfully updated"
+                status: "SUCCESS",
+                message: "Client's direction successfully updated"
             });
         });
     } catch (err) {
@@ -305,11 +314,10 @@ router.get("/read/:id", async (req, res) => {
         }
         //res.send(result);
         res.json({
-            status:"SUCCESS",
-            message:"Client successfully obtained",
-            data:result
+            status: "SUCCESS",
+            message: "Client successfully obtained",
+            data: result
         });
-        console.log(result);
     });
 });
 
@@ -320,9 +328,9 @@ router.get("/read", async (req, res) => {
             res.send(err);
         }
         res.json({
-            status:"SUCCESS",
-            message:"Client successfully obtained",
-            data:result
+            status: "SUCCESS",
+            message: "Client successfully obtained",
+            data: result
         });
     });
 });
