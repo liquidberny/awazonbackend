@@ -55,7 +55,7 @@ router.post("/signup", (req, res) => {
     //Checking if user already exists
     Carrier.find({ email })
       .then((result) => {
-        if (result.length!==0) {
+        if (result.length) {
           // A user already exists
           res.json({
             status: "FAILED",
