@@ -50,4 +50,53 @@ router.post('/create', (req, res) => {
     }
 });
 
+router.put('/:orderId/ComenzarOrden', async (req, res) => {
+    const orderId = req.params.orderId;
+    const orden_status = req.body.orden_status;
+  
+    
+    Order.findOneAndUpdate(
+      { _id: orderId },
+      { _orden_status: orden_status }
+    )
+      .then(updatedP => {
+        res.json({
+          status: "SUCCESS",
+          message: "Se ha cambiado la status de la orden",
+          data: updatedP
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        res.status(500).json({ 
+          status:"ERROR",
+          message:"No se a podido realizar el cambio de status" 
+        });
+      });
+  });
+
+router.put('/:orderId/Cancelarorden',async (req, res) => {
+    const orderId = req.params.orderId;
+    const orden_status = "CANCEL";
+  
+    Order.findOneAndUpdate(
+      { _id: orderId },
+      { _orden_status: orden_status }
+    )
+      .then(updatedP => {
+        res.json({
+          status: "SUCCESS",
+          message: "Se ha cancelado la orden",
+          data: updatedP
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        res.status(500).json({ 
+          status:"ERROR",
+          message:"No se a podido cancelar la orden" 
+        });
+      });
+
+});
 module.exports = router;
