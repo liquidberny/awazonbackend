@@ -4,11 +4,13 @@ const Order = require("../models/Order");
 
 //crear orden
 router.post('/create', (req, res) => {
+
     let id_client = req.body.id_client;
-    let id_carrier = req.body.id_carrier
-    let cant_garrafones = req.body.cant_garrafones
-    let cuota_servicio = req.body.cuota_servicio
-    let total = req.body.total
+    let id_carrier = req.body.id_carrier;
+    let cant_garrafones = req.body.cant_garrafones;
+    let precio = req.body.precio;
+    let cuota_servicio = 5;
+    let total = precio * cant_garrafones + cuota_servicio
     let orden_status = req.body.orden_status;
     let entrega_status = req.body.entrega_status;
     let fecha_pedido = new Date().toISOString();
@@ -97,6 +99,52 @@ router.put('/:orderId/Cancelarorden',async (req, res) => {
           message:"No se a podido cancelar la orden" 
         });
       });
+
+});
+
+
+// Consultar orden - cliente
+router.get("/read/client/:id", async (req, res) => {
+    const id = req.params.id;
+
+    Order.find({ id_client: id, orden_status: "PENDIENTE" }).then(result => {
+        console.log('order');
+        if (result.length !== 0) {
+            res.json({
+                status: "SUCCESS",
+                message: "Order successfully obtained",
+                data: result
+            });
+        }
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: "FAILED",
+            message: "An error ocurred while checking for existing order!"
+        })
+    });
+
+});
+// Consultar orden - carrier
+router.get("/read/carrier/:id", async (req, res) => {
+    const id = req.params.id;
+
+    Order.find({ id_carrier: id, orden_status: "PENDIENTE" }).then(result => {
+        console.log('order');
+        if (result.length !== 0) {
+            res.json({
+                status: "SUCCESS",
+                message: "Order successfully obtained",
+                data: result
+            });
+        }
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: "FAILED",
+            message: "An error ocurred while checking for existing order!"
+        })
+    });
 
 });
 module.exports = router;

@@ -8,7 +8,7 @@ const OrderSchema = new mongoose.Schema({
     cuota_servicio: Number,
     total: Number,
     orden_status: String,
-    entraga_status: String,
+    entrega_status: String,
     fecha_pedido: Date,
     fecha_entrega: Date,
 });
