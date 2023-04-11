@@ -57,7 +57,7 @@ router.put('/:orderId/ComenzarOrden', async (req, res) => {
     
     Order.findOneAndUpdate(
       { _id: orderId },
-      { _orden_status: orden_status }
+      { orden_status: orden_status }
     )
       .then(updatedP => {
         res.json({
