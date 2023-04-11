@@ -10,12 +10,12 @@ router.post('/create', (req, res) => {
     let cuota_servicio = req.body.cuota_servicio
     let total = req.body.total
     let orden_status = req.body.orden_status;
-    let entraga_status = req.body.entraga_status;
-    let fecha_pedido = req.body.fecha_pedido;
-    let fecha_entrega = req.body.fecha_entrega;
+    let entrega_status = req.body.entrega_status;
+    let fecha_pedido = new Date().toISOString();
+    let fecha_entrega = "";
 
     if (id_client == "" || id_carrier == "" || cant_garrafones == "" || cuota_servicio == "" ||
-        orden_status == "" || entraga_status == "" || fecha_pedido == "" || fecha_entrega == "") {
+        orden_status == "" || entrega_status == "" || fecha_pedido == "" ) {
         res.json({
             status: "FAILED",
             message: "Empty input fields!"
@@ -29,7 +29,7 @@ router.post('/create', (req, res) => {
             cuota_servicio,
             total,
             orden_status,
-            entraga_status,
+            entrega_status,
             fecha_pedido,
             fecha_entrega,
         });
