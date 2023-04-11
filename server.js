@@ -18,12 +18,11 @@ app.use(bodyParser({
 // const UserRouter = require("./api/User");
 const ClientRouter = require("./api/Client")
 const CarrierRouter = require("./api/Carrier");
-const OrderRouter = require("./api/Order");
-
+const OrderRouter = require("./api/Order")
 // app.use("/user", UserRouter);
 app.use("/client", ClientRouter);
 app.use('/carrier',CarrierRouter);
-app.use('/order',OrderRouter);
+app.use("/order", OrderRouter);
 
 app.listen(process.env.PORT, () => {
   console.log(`server running on port ${process.env.PORT}`);
