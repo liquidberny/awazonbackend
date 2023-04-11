@@ -10,8 +10,8 @@ router.post("/create", (req, res) => {
     let precio = req.body.precio;
     let cuota_servicio = 5;
     let total = cant_garrafones * precio + cuota_servicio;
-    let orden_status = "PENDIENTE";
-    let entrega_status = req.body.entrega_status;
+    let orden_status = "pending";
+    let entrega_status = "pending";
     let fecha_pedido = new Date().toISOString();
     let fecha_entrega = "";
 
@@ -61,7 +61,7 @@ router.post("/create", (req, res) => {
 //COMENZAR ORDEN
 router.put("/:orderId/ComenzarOrden", async (req, res) => {
     const orderId = req.params.orderId;
-    const orden_status ="EN CURSO";
+    const orden_status ="accepted";
 
     Order.findOneAndUpdate({ _id: orderId }, { orden_status: orden_status })
         .then((updatedP) => {
@@ -82,7 +82,7 @@ router.put("/:orderId/ComenzarOrden", async (req, res) => {
 //cancelar orden
 router.put("/:orderId/Cancelarorden", async (req, res) => {
     const orderId = req.params.orderId;
-    const orden_status = "CANCELADA";
+    const orden_status = "declined";
 
     Order.findOneAndUpdate({ _id: orderId }, { orden_status: orden_status })
         .then((updatedP) => {
@@ -113,11 +113,32 @@ router.get("/read", async (req, res) => {
         });
     });
 });
-// Consultar orden PENDIENTE - cliente
+// Consultar orden por id
+router.get("/read/:id", async (req, res) => {
+    const id = req.params.id;
+
+    Order.find({ _id: id }).then(result => {
+        if (result.length !== 0) {
+            res.json({
+                status: "SUCCESS",
+                message: "Order successfully obtained",
+                data: result
+            });
+        }
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: "FAILED",
+            message: "An error ocurred while checking for existing order!"
+        })
+    });
+
+});
+// Consultar orden - cliente
 router.get("/read/client/:id", async (req, res) => {
     const id = req.params.id;
 
-    Order.find({ id_client: id, orden_status: "PENDIENTE" }).then(result => {
+    Order.find({ id_client: id }).then(result => {
         console.log('order');
         if (result.length !== 0) {
             res.json({
@@ -135,12 +156,31 @@ router.get("/read/client/:id", async (req, res) => {
     });
 
 });
-// Consultar orden PENDIENTE - carrier
+// Consultar orden - carrier
 router.get("/read/carrier/:id", async (req, res) => {
     const id = req.params.id;
 
-    Order.find({ id_carrier: id, orden_status: "PENDIENTE" }).then(result => {
+    Order.find({ id_carrier: id }).then(result => {
         console.log('order');
+        if (result.length !== 0) {
+            res.json({
+                status: "SUCCESS",
+                message: "Order successfully obtained",
+                data: result
+            });
+        }
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: "FAILED",
+            message: "An error ocurred while checking for existing order!"
+        })
+    });
+
+});
+// Consultar orden status pendientes 
+router.get("/pending", async (req, res) => {
+    Order.find({ orden_status: "pending" }).then(result => {
         if (result.length !== 0) {
             res.json({
                 status: "SUCCESS",
