@@ -58,13 +58,13 @@ router.post("/create", (req, res) => {
             });
     }
 });
-//COMENZAR ORDEN
-router.put("/:orderId/ComenzarOrden", async (req, res) => {
+//CAMBIAR ORDEN STATUS
+router.put("/:orderId/orden_status", async (req, res) => {
     const orderId = req.params.orderId;
-    const orden_status ="accepted";
-
-    Order.findOneAndUpdate({ _id: orderId }, { orden_status: orden_status })
+    const orden = req.query.orden;
+    Order.findOneAndUpdate({ _id: orderId }, { orden_status: orden })
         .then((updatedP) => {
+            updatedP.orden_status = orden;
             res.json({
                 status: "SUCCESS",
                 message: "Se ha cambiado la status de la orden",
@@ -79,16 +79,17 @@ router.put("/:orderId/ComenzarOrden", async (req, res) => {
             });
         });
 });
-//cancelar orden
-router.put("/:orderId/Cancelarorden", async (req, res) => {
-    const orderId = req.params.orderId;
-    const orden_status = "declined";
 
-    Order.findOneAndUpdate({ _id: orderId }, { orden_status: orden_status })
+//CAMBIAR ENTREGA STATUS
+router.put("/:orderId/entrega_status", async (req, res) => {
+    const orderId = req.params.orderId;
+    const newOrder = req.query.entrega; // Obtener el valor del query "entrega"
+    Order.findOneAndUpdate({ _id: orderId }, { entrega_status: newOrder })
         .then((updatedP) => {
+            updatedP.entrega_status = newOrder;
             res.json({
                 status: "SUCCESS",
-                message: "Se ha cancelado la orden",
+                message: "Se ha cambiado la status de la orden",
                 data: updatedP,
             });
         })
@@ -96,10 +97,12 @@ router.put("/:orderId/Cancelarorden", async (req, res) => {
             console.error(err);
             res.status(500).json({
                 status: "ERROR",
-                message: "No se a podido cancelar la orden",
+                message: "No se a podido realizar el cambio de status",
             });
         });
 });
+
+
 //get solicitudes
 router.get("/read", async (req, res) => {
     Order.find({}, (err, result) => {
@@ -193,6 +196,26 @@ router.get("/pending", async (req, res) => {
         res.json({
             status: "FAILED",
             message: "An error ocurred while checking for existing order!"
+        })
+    });
+
+});
+// Consultar pedidos en curso 
+router.get("/accepted/:id", async (req, res) => {
+    const id = req.params.id;
+    Order.find({ _id: id,  orden_status: "accepted", entrega_status: "accepted"  }).then(result => {
+        if (result.length !== 0) {
+            res.json({
+                status: "SUCCESS",
+                message: "Delivery in course successfully obtained",
+                data: result
+            });
+        }
+    }).catch(err => {
+        console.log(err);
+        res.json({
+            status: "FAILED",
+            message: "An error ocurred while checking for existing delivery!"
         })
     });
 
