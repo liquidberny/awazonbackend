@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
-
+const Client = require("../models/Client")
 //crear orden
 router.post("/create", (req, res) => {
     let id_client = req.body.id_client;
-    let id_carrier = req.body.id_carrier;
+    let id_carrier = "";
     let cant_garrafones = req.body.cant_garrafones;
     let precio = req.body.precio;
     let cuota_servicio = 5;
@@ -83,8 +83,9 @@ router.put("/:orderId/orden_status", async (req, res) => {
 //CAMBIAR ENTREGA STATUS
 router.put("/:orderId/entrega_status", async (req, res) => {
     const orderId = req.params.orderId;
+    const id_carrier = req.body.id_carrier;
     const newOrder = req.query.entrega; // Obtener el valor del query "entrega"
-    Order.findOneAndUpdate({ _id: orderId }, { entrega_status: newOrder })
+    Order.findOneAndUpdate({ _id: orderId }, { entrega_status: newOrder, id_carrier: id_carrier })
         .then((updatedP) => {
             updatedP.entrega_status = newOrder;
             res.json({
@@ -181,14 +182,16 @@ router.get("/read/carrier/:id", async (req, res) => {
     });
 
 });
-// Consultar orden status pendientes 
+// consultar solicitudes de pedidos
 router.get("/pending", async (req, res) => {
-    Order.find({ orden_status: "pending" }).then(result => {
+    Order.find({ orden_status: "pending", entrega_status: "pending" }).then(result => {
         if (result.length !== 0) {
             res.json({
                 status: "SUCCESS",
-                message: "Order successfully obtained",
-                data: result
+                message: "Orders successfully obtained",
+                data: {
+                    order: result,
+                }
             });
         }
     }).catch(err => {
@@ -203,7 +206,7 @@ router.get("/pending", async (req, res) => {
 // Consultar pedidos en curso 
 router.get("/accepted/:id", async (req, res) => {
     const id = req.params.id;
-    Order.find({ _id: id,  orden_status: "accepted", entrega_status: "accepted"  }).then(result => {
+    Order.find({ id_carrier: id, orden_status: "accepted", entrega_status: "accepted" }).then(result => {
         if (result.length !== 0) {
             res.json({
                 status: "SUCCESS",
@@ -220,4 +223,6 @@ router.get("/accepted/:id", async (req, res) => {
     });
 
 });
+
+
 module.exports = router;
