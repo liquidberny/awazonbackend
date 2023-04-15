@@ -128,6 +128,11 @@ router.get("/read/:id", async (req, res) => {
                 message: "Order successfully obtained",
                 data: result
             });
+        } else {
+            res.status(404).json({
+                status:"FAILED",
+                message: "Unable to find order related to the provided Order ID."
+            })
         }
     }).catch(err => {
         console.log(err);
@@ -150,6 +155,11 @@ router.get("/read/client/:id", async (req, res) => {
                 message: "Order successfully obtained",
                 data: result
             });
+        } else {
+            res.status(404).json({
+                status:"FAILED",
+                message:"Unable to find orders related to the provided CLient ID."
+            })
         }
     }).catch(err => {
         console.log(err);
@@ -172,6 +182,11 @@ router.get("/read/carrier/:id", async (req, res) => {
                 message: "Order successfully obtained",
                 data: result
             });
+        } else {
+            res.status(404).json({
+                status:"FAILED",
+                message:"Unable to find orders related to the provided Carrier ID."
+            })
         }
     }).catch(err => {
         console.log(err);
@@ -193,6 +208,11 @@ router.get("/pending", async (req, res) => {
                     order: result,
                 }
             });
+        } else {
+            res.status(404).json({
+                status:"FAILED",
+                message:"Unable to find pending orders."
+            })
         }
     }).catch(err => {
         console.log(err);
@@ -213,6 +233,11 @@ router.get("/accepted/:id", async (req, res) => {
                 message: "Delivery in course successfully obtained",
                 data: result
             });
+        } else {
+            res.status(404).json({
+                status:"FAILED",
+                message:"Unable to find orders in course related to the provided ID."
+            })
         }
     }).catch(err => {
         console.log(err);
