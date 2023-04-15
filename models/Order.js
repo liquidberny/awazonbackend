@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 const OrderSchema = new mongoose.Schema({
     id_client: String,
-    id_carrier: String,
+    id_carrier: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
     cant_garrafones: Number,
     precio: Number,
     cuota_servicio: Number,

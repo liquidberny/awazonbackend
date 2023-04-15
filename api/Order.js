@@ -5,7 +5,7 @@ const Client = require("../models/Client")
 //crear orden
 router.post("/create", (req, res) => {
     let id_client = req.body.id_client;
-    let id_carrier = "";
+    let id_carrier = req.body.id_carrier;
     let cant_garrafones = req.body.cant_garrafones;
     let precio = req.body.precio;
     let cuota_servicio = 5;
@@ -19,8 +19,7 @@ router.post("/create", (req, res) => {
         id_client == "" ||
         id_carrier == "" ||
         cant_garrafones == "" ||
-        entrega_status == "" ||
-        fecha_pedido == ""
+        entrega_status == ""
     ) {
         res.json({
             status: "FAILED",
@@ -121,23 +120,40 @@ router.get("/read", async (req, res) => {
 router.get("/read/:id", async (req, res) => {
     const id = req.params.id;
 
-    Order.find({ _id: id }).then(result => {
-        if (result.length !== 0) {
+    Order.findById(id)
+        .then(async order => {
+            if (!order) {
+                res.json({
+                    status: "FAILED",
+                    message: "Order not found"
+                });
+                return;
+            }
+
+            // Obtener la dirección y horario del cliente asociado a la orden
+            const clientId = order.id_client;
+            const client = await Client.findById(clientId).select("direccion horario");
+
             res.json({
                 status: "SUCCESS",
                 message: "Order successfully obtained",
-                data: result
+                data: {
+                    ...order.toObject(),
+                    direccion: client.direccion,
+                    horario: client.horario
+                }
             });
-        }
-    }).catch(err => {
-        console.log(err);
-        res.json({
-            status: "FAILED",
-            message: "An error ocurred while checking for existing order!"
         })
-    });
-
+        .catch(err => {
+            console.log(err);
+            res.json({
+                status: "FAILED",
+                message: "An error occurred while obtaining the order"
+            });
+        });
 });
+
+
 // Consultar orden - cliente
 router.get("/read/client/:id", async (req, res) => {
     const id = req.params.id;
@@ -223,6 +239,72 @@ router.get("/accepted/:id", async (req, res) => {
     });
 
 });
+//encontrar por colonia
+router.get('/readbycolonia', async (req, res) => {
+    const colony = req.query.colony;
+    if (!colony) {
+        return res.status(400).json({
+            status: 'FAILED',
+            message: 'Please provide a valid colony name'
+        });
+    }
 
+    try {
+        const clients = await Client.find({ 'direccion.colonia': colony });
+        const clientIds = clients.map(client => client._id);
+
+        const orders = await Order.find({ id_client: { $in: clientIds } })
+        .populate({
+            path: 'id_client',
+            populate: {
+                path: 'direccion',
+                model: 'Direccion'
+            }
+        })
+        .populate('id_client.horario');
+
+        return res.json({
+            status: 'SUCCESS',
+            message: `Orders successfully obtained for clients in ${colony} colony`,
+            data: orders
+        });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            status: 'FAILED',
+            message: 'An error occurred while fetching orders'
+        });
+    }
+});
+
+//encontrar por dias
+router.get('/readbydias', async (req, res) => {
+    const day = Number(req.query.day);
+    if (!day) {
+        return res.status(400).json({
+            status: 'FAILED',
+            message: 'Please provide a valid day'
+        });
+    }
+
+    try {
+        const clients = await Client.find({ 'horario.dias': { $in: [day] } });
+        const clientIds = clients.map(client => client._id);
+
+        const orders = await Order.find({ id_client: { $in: clientIds } });
+
+        return res.json({
+            status: 'SUCCESS',
+            message: `Orders successfully obtained for clients with delivery on ${day}`,
+            data: orders
+        });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            status: 'FAILED',
+            message: 'An error occurred while fetching orders'
+        });
+    }
+});
 
 module.exports = router;
