@@ -254,14 +254,6 @@ router.get('/readbycolonia', async (req, res) => {
         const clientIds = clients.map(client => client._id);
 
         const orders = await Order.find({ id_client: { $in: clientIds } })
-        .populate({
-            path: 'id_client',
-            populate: {
-                path: 'direccion',
-                model: 'Direccion'
-            }
-        })
-        .populate('id_client.horario');
 
         return res.json({
             status: 'SUCCESS',
@@ -269,14 +261,14 @@ router.get('/readbycolonia', async (req, res) => {
             data: orders
         });
     } catch (err) {
-        console.log(err);
+        
         return res.status(500).json({
             status: 'FAILED',
-            message: 'An error occurred while fetching orders'
+            message: 'An error occurred while fetching orders',
+            error: err
         });
     }
 });
-
 //encontrar por dias
 router.get('/readbydias', async (req, res) => {
     const day = Number(req.query.day);
@@ -302,7 +294,8 @@ router.get('/readbydias', async (req, res) => {
         console.log(err);
         return res.status(500).json({
             status: 'FAILED',
-            message: 'An error occurred while fetching orders'
+            message: 'An error occurred while fetching orders',
+            error: err
         });
     }
 });
