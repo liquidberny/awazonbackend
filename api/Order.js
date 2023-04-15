@@ -319,5 +319,44 @@ router.get('/readbydias', async (req, res) => {
         });
     }
 });
+//leer utilizando colonia y dia a la vez
+router.get('/readbycoloniaydia', async (req, res) => {
+    let colonia = req.body.colonia;
+    let dias = req.body.dias;
+
+    if (!colonia && !dias) {
+      return res.status(400).json({
+        status: 'FAILED',
+        message: 'Please provide a valid colony name or day'
+      });
+    }
+  
+    try {
+      let clientIds = [];
+      if (colonia) {
+        const clientsByColony = await Client.find({ 'direccion.colonia': colonia });
+        clientIds = clientsByColony.map(client => client.id);
+      }
+      if (dias) {
+        const clientsByDay = await Client.find({ 'horario.dias': { $in: [dias] } });
+        const clientIdsByDay = clientsByDay.map(client => client.id);        
+        clientIds = clientIds.length > 0 ? clientIds.filter(id => clientIdsByDay.includes(id)) : clientIdsByDay;
+      }
+      const orders = await Order.find({ id_client: { $in: clientIds } });
+  
+      return res.json({
+        status: 'SUCCESS',
+        message: 'Orders successfully obtained',
+        data: orders
+      });
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({
+        status: 'FAILED',
+        message: 'An error occurred while fetching orders',
+        error: err
+      });
+    }
+  });
 
 module.exports = router;
