@@ -123,8 +123,7 @@ router.put("/:orderId/accept-request", async (req, res) => {
     .then((updatedP) => {
       res.json({
         status: "SUCCESS",
-        message: "Se ha aceptado la solicitud de la orden",
-        data: updatedP,
+        message: "Se ha aceptado la solicitud de la orden"
       });
     })
     .catch((err) => {
@@ -149,8 +148,7 @@ router.put("/:orderId/decline-request", async (req, res) => {
     .then((updatedP) => {
       res.json({
         status: "SUCCESS",
-        message: "Se ha rechazado la solicitud de la orden",
-        data: updatedP,
+        message: "Se ha rechazado la solicitud de la orden"
       });
     })
     .catch((err) => {
@@ -177,8 +175,7 @@ router.put("/:orderId/start-delivery", async (req, res) => {
     .then((updatedP) => {
       res.json({
         status: "SUCCESS",
-        message: "Se ha comenzado la entrega de la orden",
-        data: updatedP,
+        message: "Se ha comenzado la entrega de la orden"
       });
     })
     .catch((err) => {
@@ -198,13 +195,13 @@ router.put("/:orderId/cancel-delivery", async (req, res) => {
     {
       orden_status: "accepted",
       entrega_status: "pending",
+      id_carrier: null,
     }
   )
     .then((updatedP) => {
       res.json({
         status: "SUCCESS",
-        message: "Se ha cancelado la entrega de la orden",
-        data: updatedP,
+        message: "Se ha cancelado la entrega de la orden"
       });
     })
     .catch((err) => {
@@ -229,8 +226,7 @@ router.put("/:orderId/finish-delivery", async (req, res) => {
     .then((updatedP) => {
       res.json({
         status: "SUCCESS",
-        message: "Se ha cancelado la entrega de la orden",
-        data: updatedP,
+        message: "Se ha cancelado la entrega de la orden"
       });
     })
     .catch((err) => {
