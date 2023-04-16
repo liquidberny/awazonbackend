@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
 const Client = require("../models/Client");
+const Carrier = require("../models/Carrier");
+var ObjectId = require("mongodb").ObjectId;
+
 //crear orden
 router.post("/create", (req, res) => {
   let id_client = req.body.id_client;
@@ -101,6 +104,140 @@ router.put("/:orderId/entrega_status", async (req, res) => {
       res.status(500).json({
         status: "ERROR",
         message: "No se a podido realizar el cambio de status",
+      });
+    });
+});
+
+// aceptar solicitud de pedido
+router.put("/:orderId/accept-request", async (req, res) => {
+  const orderId = req.params.orderId;
+  const carrier = req.body.carrier;
+  Order.findOneAndUpdate(
+    { _id: orderId },
+    {
+      orden_status: "accepted",
+      entrega_status: "accepted",
+      id_carrier: ObjectId(carrier),
+    }
+  )
+    .then((updatedP) => {
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha aceptado la solicitud de la orden",
+        data: updatedP,
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({
+        status: "ERROR",
+        message: "Ocurrió un error al aceptar la solicitud",
+      });
+    });
+});
+
+// rechazar solicitud de pedido
+router.put("/:orderId/decline-request", async (req, res) => {
+  const orderId = req.params.orderId;
+  Order.findOneAndUpdate(
+    { _id: orderId },
+    {
+      orden_status: "declined",
+      entrega_status: "pending"
+    }
+  )
+    .then((updatedP) => {
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha rechazado la solicitud de la orden",
+        data: updatedP,
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({
+        status: "ERROR",
+        message: "Ocurrió un error al rechazar la solicitud",
+      });
+    });
+});
+
+// comenzar entrega
+router.put("/:orderId/start-delivery", async (req, res) => {
+  const orderId = req.params.orderId;
+  const carrier = req.body.carrier;
+  Order.findOneAndUpdate(
+    { _id: orderId },
+    {
+      orden_status: "accepted",
+      entrega_status: "accepted",
+      id_carrier: ObjectId(carrier),
+    }
+  )
+    .then((updatedP) => {
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha comenzado la entrega de la orden",
+        data: updatedP,
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({
+        status: "ERROR",
+        message: "Ocurrió un error al comenzar la entrega",
+      });
+    });
+});
+
+// cancelar entrega
+router.put("/:orderId/cancel-delivery", async (req, res) => {
+  const orderId = req.params.orderId;
+  Order.findOneAndUpdate(
+    { _id: orderId },
+    {
+      orden_status: "accepted",
+      entrega_status: "pending",
+    }
+  )
+    .then((updatedP) => {
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha cancelado la entrega de la orden",
+        data: updatedP,
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({
+        status: "ERROR",
+        message: "Ocurrió un error al cancelar la entrega",
+      });
+    });
+});
+
+// finalizar entrega
+router.put("/:orderId/finish-delivery", async (req, res) => {
+  const orderId = req.params.orderId;
+  Order.findOneAndUpdate(
+    { _id: orderId },
+    {
+      orden_status: "accepted",
+      entrega_status: "done",
+    }
+  )
+    .then((updatedP) => {
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha cancelado la entrega de la orden",
+        data: updatedP,
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({
+        status: "ERROR",
+        message: "Ocurrió un error al cancelar la entrega",
       });
     });
 });
@@ -214,8 +351,8 @@ router.get("/read/carrier/:id", async (req, res) => {
     });
 });
 
-// US18 - consultar solicitudes de pedidos
-router.get("/pending", async (req, res) => {
+// consultar solicitudes de pedidos
+router.get("/requests", async (req, res) => {
   try {
     const orders = await Order.find({
       orden_status: "pending",
@@ -231,7 +368,79 @@ router.get("/pending", async (req, res) => {
       res.json({
         status: "SUCCESS",
         message: "Orders successfully obtained",
-        data: orders
+        data: orders,
+      });
+    } else {
+      res.status(404).json({
+        status: "FAILED",
+        message: "Unable to find pending orders.",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.json({
+      status: "FAILED",
+      message: "An error ocurred while checking for existing order!",
+    });
+  }
+});
+
+// consultar pedidos pendientes
+router.get("/pending", async (req, res) => {
+  try {
+    const orders = await Order.find({
+      orden_status: "accepted",
+      entrega_status: "pending",
+    });
+
+    for (let i = 0; i < orders.length; i++) {
+      const client = await Client.findById(orders[i].id_client);
+      orders[i].id_client = client;
+    }
+
+    if (orders.length !== 0) {
+      res.json({
+        status: "SUCCESS",
+        message: "Orders successfully obtained",
+        data: orders,
+      });
+    } else {
+      res.status(404).json({
+        status: "FAILED",
+        message: "Unable to find pending orders.",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.json({
+      status: "FAILED",
+      message: "An error ocurred while checking for existing order!",
+    });
+  }
+});
+
+// consultar pedidos en curso
+router.get("/ongoing/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const orders = await Order.find({
+      id_carrier: id,
+      orden_status: "accepted",
+      entrega_status: "accepted",
+    });
+
+    for (let i = 0; i < orders.length; i++) {
+      const client = await Client.findById(orders[i].id_client);
+      orders[i].id_client = client;
+      const carrier = await Carrier.findById(orders[i].id_carrier);
+      orders[i].id_carrier = carrier;
+    }
+
+    if (orders.length !== 0) {
+      res.json({
+        status: "SUCCESS",
+        message: "Orders successfully obtained",
+        data: orders,
       });
     } else {
       res.status(404).json({
