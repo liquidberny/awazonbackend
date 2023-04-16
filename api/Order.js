@@ -367,7 +367,7 @@ router.get("/requests", async (req, res) => {
         data: orders,
       });
     } else {
-      res.status(404).json({
+      res.status(200).json({
         status: "FAILED",
         message: "Unable to find pending orders.",
       });
@@ -401,7 +401,7 @@ router.get("/pending", async (req, res) => {
         data: orders,
       });
     } else {
-      res.status(404).json({
+      res.status(200).json({
         status: "FAILED",
         message: "Unable to find pending orders.",
       });
@@ -439,7 +439,7 @@ router.get("/ongoing/:id", async (req, res) => {
         data: orders,
       });
     } else {
-      res.status(404).json({
+      res.status(200).json({
         status: "FAILED",
         message: "Unable to find pending orders.",
       });
