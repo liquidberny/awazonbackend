@@ -369,6 +369,7 @@ router.put('/:userId/updatePrecioGarrafon', async (req, res) => {
     });
 });
 
+//review
 router.put("/review/:id",  (req, res) => {
   const id = req.params.id;
   const calificacion = req.body.calificacion
