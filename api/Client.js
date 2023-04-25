@@ -315,6 +315,24 @@ router.put("/updateDireccion/:id", async (req, res) => {
     }
 });
 
+//Añadir review
+router.put("/review/:id",  (req, res) => {
+    const id = req.params.id;
+    const calificacion = req.body.calificacion
+    
+    try {
+        Client.findById(id, (err, updatedReview) => {
+            updatedReview.calificacion = (calificacion + updatedReview.calificacion )/2;
+            updatedReview.save();
+            res.json({
+                status: "SUCCESS",
+                message: "Client's successfully reviewed"
+            });
+        });
+    } catch (err) {
+        console.log(err);
+    }
+});
 //Read Client
 router.get("/read/:id", async (req, res) => {
     let id = req.params.id;
