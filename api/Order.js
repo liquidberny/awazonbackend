@@ -619,4 +619,33 @@ router.get("/read/carrier/history/:id", async (req, res) => {
     });
 });
 
+// Visualizar historial del cliente
+router.get("/read/client/history/:id", async (req, res) => {
+  const id = req.params.id;
+
+  Order.find({ id_client: id, orden_status: "accepted",entrega_status: "done"})
+    .then((result) => {
+      console.log(result);
+      if (result.length !== 0) {
+        res.json({
+          status: "SUCCESS",
+          message: "History successfully obtained",
+          data: result,
+        });
+      } else {
+        res.status(404).json({
+          status: "FAILED",
+          message: "Unable to find history related to the provided Client ID.",
+        });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.json({
+        status: "FAILED",
+        message: "An error ocurred while checking history client",
+      });
+    });
+});
+
 module.exports = router;
