@@ -648,4 +648,90 @@ router.get("/read/client/history/:id", async (req, res) => {
     });
 });
 
+// reseña carrier a cliente
+router.put("/:orderId/review/client", async (req, res) => {
+  const orderId = req.params.orderId;
+  const reseña = req.body.reseña;
+  let calificacion=0;
+  let mensaje = "";
+  const id_cliente = (await Order.findOne({ _id: orderId,orden_status: "accepted",entrega_status: "done"}));
+  Client.findById(id_cliente.id_client)
+  .then((result)=>{
+    if(!id_cliente.reseñaCliente){
+      reseña.id_carrier=id_cliente.id_carrier;
+      if(result["reseña"]!==undefined){
+        result.reseña.push(reseña);
+      } else {
+        result.reseña = [reseña];
+      }
+      result.reseña.forEach(calif => {
+        calificacion +=Number(calif.calificacion);
+      });
+      console.log(result.reseña);
+      result.calificacion=calificacion/result.reseña.length;
+      result.reseñaCliente=true;
+      Order.findOne({_id:orderId}).then((r)=>{
+        console.log(r);
+        r.reseñaCliente=true;
+        r.save();
+      });
+      result.save();
+      mensaje="Review successfully registered";
+    }else{
+      mensaje="Client already reviewed in this order";
+    }
+    res.json({
+      status:"SUCCESS",
+      message:mensaje
+    })
+  }).catch((err)=>{
+    res.json({
+      messgae:"fail"
+    })
+  }
+  );
+});
+
+// reseña cliente a carrier
+router.put("/:orderId/review/carrier", async (req, res) => {
+  const orderId = req.params.orderId;
+  const reseña = req.body.reseña;
+  let calificacion=0;
+  let mensaje = "";
+  const id_carrier = (await Order.findOne({ _id: orderId,orden_status: "accepted",entrega_status: "done"}));
+  Carrier.findById(id_carrier.id_carrier)
+  .then((result)=>{
+    if (!id_carrier.reseñaCarrier) {
+      reseña.id_client=id_carrier.id_client;
+      if(result["reseña"]!==undefined){
+        result.reseña.push(reseña);
+      } else {
+        result.reseña = [reseña];
+      }
+      result.reseña.forEach(calif => {
+        calificacion +=Number(calif.calificacion);
+      });
+      console.log(result.reseña);
+      result.calificacion=calificacion/result.reseña.length;
+      Order.findOne({_id:orderId}).then((r)=>{
+        console.log(r);
+        r.reseñaCarrier=true;
+        r.save();
+      });
+      result.save();
+      mensaje="Review successfully registered";
+    } else {
+      mensaje="Carrier already reviewed in this order";
+    }
+    res.json({
+      status:"SUCCESS",
+      messgae:mensaje
+    })
+  }).catch((err)=>{
+    res.json({
+      messgae:"fail"
+    })
+  }
+  );
+});
 module.exports = router;
