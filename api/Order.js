@@ -686,8 +686,9 @@ router.put("/:orderId/review/client", async (req, res) => {
     })
   }).catch((err)=>{
     res.json({
-      messgae:"fail"
-    })
+      status: "FAILED",
+      message: "An error ocurred while reviewing client",
+    });
   }
   );
 });
@@ -729,8 +730,9 @@ router.put("/:orderId/review/carrier", async (req, res) => {
     })
   }).catch((err)=>{
     res.json({
-      messgae:"fail"
-    })
+      status: "FAILED",
+      message: "An error ocurred while reviewing carrier",
+    });
   }
   );
 });
