@@ -369,5 +369,23 @@ router.put('/:userId/updatePrecioGarrafon', async (req, res) => {
     });
 });
 
+//review
+router.put("/review/:id",  (req, res) => {
+  const id = req.params.id;
+  const calificacion = req.body.calificacion
+  
+  try {
+      Carrier.findById(id, (err, updatedReview) => {
+          updatedReview.calificacion = (calificacion + updatedReview.calificacion )/2;
+          updatedReview.save();
+          res.json({
+              status: "SUCCESS",
+              message: "Se ha podido actualizar la review del carrier"
+          });
+      });
+  } catch (err) {
+      console.log(err);
+  }
+});
 
 module.exports = router;
