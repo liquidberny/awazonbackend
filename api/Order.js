@@ -226,7 +226,7 @@ router.put("/:orderId/finish-delivery", async (req, res) => {
     .then((updatedP) => {
       res.json({
         status: "SUCCESS",
-        message: "Se ha cancelado la entrega de la orden"
+        message: "Se ha finalizado la entrega de la orden"
       });
     })
     .catch((err) => {
@@ -594,7 +594,7 @@ router.get("/readbycoloniaydia", async (req, res) => {
 router.get("/read/carrier/history/:id", async (req, res) => {
   const id = req.params.id;
 
-  Order.find({ id_carrier: id, orden_status: "accepted",entrega_status: "done" })
+  Order.find({ id_carrier: id, orden_status: "accepted", entrega_status: "done" })
     .then((result) => {
       console.log("order");
       if (result.length !== 0) {
@@ -623,7 +623,7 @@ router.get("/read/carrier/history/:id", async (req, res) => {
 router.get("/read/client/history/:id", async (req, res) => {
   const id = req.params.id;
 
-  Order.find({ id_client: id, orden_status: "accepted",entrega_status: "done"})
+  Order.find({ id_client: id, orden_status: "accepted", entrega_status: "done" })
     .then((result) => {
       console.log(result);
       if (result.length !== 0) {
@@ -648,4 +648,109 @@ router.get("/read/client/history/:id", async (req, res) => {
     });
 });
 
+// reseña carrier a cliente
+router.put("/:orderId/review/client", async (req, res) => {
+  const orderId = req.params.orderId;
+  const reseña = req.body.reseña;
+  let calificacion = 0;
+  let mensaje = "";
+  await Order.findOne({ _id: orderId, orden_status: "accepted", entrega_status: "done" }).then((cliente) => {
+    Client.findById(cliente.id_client)
+      .then((result) => {
+        if (!cliente.reseñaCliente) {
+          reseña.id_carrier = cliente.id_carrier;
+          if (result["reseña"] !== undefined) {
+            result.reseña.push(reseña);
+          } else {
+            result.reseña = [reseña];
+          }
+          result.reseña.forEach(calif => {
+            calificacion += Number(calif.calificacion);
+          });
+          console.log(result.reseña);
+          result.calificacion = calificacion / result.reseña.length;
+          result.reseñaCliente = true;
+          Order.findOne({ _id: orderId }).then((r) => {
+            console.log(r);
+            r.reseñaCliente = true;
+            r.save();
+          });
+          result.save();
+          mensaje = "Review successfully registered";
+        } else {
+          mensaje = "Client already reviewed in this order";
+        }
+        res.json({
+          status: "SUCCESS",
+          message: mensaje
+        })
+      }).catch((err) => {
+        res.json({
+          status: "FAILED",
+          message: "An error ocurred while reviewing client",
+        });
+      }
+      );
+  })
+    .catch((err) => {
+      console.log(err);
+      res.json({
+        status: "FAILED",
+        message: "An error ocurred while reviewing client",
+      });
+    })
+
+});
+// reseña cliente a carrier
+router.put("/:orderId/review/carrier", async (req, res) => {
+  const orderId = req.params.orderId;
+  const reseña = req.body.reseña;
+  let calificacion = 0;
+  let mensaje = "";
+  await Order.findOne({ _id: orderId, orden_status: "accepted", entrega_status: "done" }).then((carrier) => {
+    Carrier.findById(carrier.id_carrier)
+    .then((result) => {
+      if (!carrier.reseñaCarrier) {
+        reseña.id_client = carrier.id_client;
+        if (result["reseña"] !== undefined) {
+          result.reseña.push(reseña);
+        } else {
+          result.reseña = [reseña];
+        }
+        result.reseña.forEach(calif => {
+          calificacion += Number(calif.calificacion);
+        });
+        console.log(result.reseña);
+        result.calificacion = calificacion / result.reseña.length;
+        Order.findOne({ _id: orderId }).then((r) => {
+          console.log(r);
+          r.reseñaCarrier = true;
+          r.save();
+        });
+        result.save();
+        mensaje = "Review successfully registered";
+      } else {
+        mensaje = "Carrier already reviewed in this order";
+      }
+      res.json({
+        status: "SUCCESS",
+        messgae: mensaje
+      })
+    }).catch((err) => {
+      res.json({
+        status: "FAILED",
+        message: "An error ocurred while reviewing carrier",
+      });
+    }
+    );
+  })
+    .catch((err) => {
+      console.log(err);
+      res.json({
+        status: "FAILED",
+        message: "An error ocurred while reviewing carrier",
+      });
+    })
+
+});
 module.exports = router;

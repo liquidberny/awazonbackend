@@ -7,7 +7,8 @@ const UserSchema = new mongoose.Schema({
     email: String,
     contrasena: String,
     num_contacto: Number,
-    calificacion: Number,  
+    calificacion: Number,
+    reseña:Array,
 });
 const User =  mongoose.model('User', UserSchema )
 module.exports = User;
