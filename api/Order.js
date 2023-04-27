@@ -667,9 +667,9 @@ router.put("/:orderId/review/client", async (req, res) => {
           result.reseña.forEach(calif => {
             calificacion += Number(calif.calificacion);
           });
-          console.log(result.reseña);
           result.calificacion = calificacion / result.reseña.length;
-          result.reseñaCliente = true;
+          result.calificacion = parseFloat(result.calificacion.toFixed(2));
+          console.log(result.calificacion);
           Order.findOne({ _id: orderId }).then((r) => {
             console.log(r);
             r.reseñaCliente = true;
@@ -710,6 +710,7 @@ router.put("/:orderId/review/carrier", async (req, res) => {
   await Order.findOne({ _id: orderId, orden_status: "accepted", entrega_status: "done" }).then((carrier) => {
     Carrier.findById(carrier.id_carrier)
     .then((result) => {
+      console.log(carrier.id_client);
       if (!carrier.reseñaCarrier) {
         reseña.id_client = carrier.id_client;
         if (result["reseña"] !== undefined) {
@@ -720,8 +721,9 @@ router.put("/:orderId/review/carrier", async (req, res) => {
         result.reseña.forEach(calif => {
           calificacion += Number(calif.calificacion);
         });
-        console.log(result.reseña);
         result.calificacion = calificacion / result.reseña.length;
+        result.calificacion = parseFloat(result.calificacion.toFixed(2));
+        console.log(result.calificacion);
         Order.findOne({ _id: orderId }).then((r) => {
           console.log(r);
           r.reseñaCarrier = true;
@@ -737,6 +739,7 @@ router.put("/:orderId/review/carrier", async (req, res) => {
         messgae: mensaje
       })
     }).catch((err) => {
+      console.log(err);
       res.json({
         status: "FAILED",
         message: "An error ocurred while reviewing carrier",
