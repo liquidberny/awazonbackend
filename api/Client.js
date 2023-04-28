@@ -341,6 +341,7 @@ router.get("/read/:id", async (req, res) => {
             res.send(err);
         }
         //res.send(result);
+        result.calificacion=parseFloat(result.calificacion.toFixed(2));
         res.json({
             status: "SUCCESS",
             message: "Client successfully obtained",

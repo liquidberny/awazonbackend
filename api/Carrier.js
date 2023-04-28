@@ -180,6 +180,7 @@ router.get("/read/:id", async (req, res) => {
     if (err) {
       res.send(err);
     }
+    result.calificacion=parseFloat(result.calificacion.toFixed(2));
     res.json({
       status: "SUCCESS",
       message: "Carrier succesfully found",
