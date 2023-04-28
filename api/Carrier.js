@@ -122,59 +122,61 @@ router.post("/signup", (req, res) => {
 });
 
 //Signin
-router.post('/signin', (req, res) => {
+router.post("/signin", (req, res) => {
   let { email, contrasena } = req.body;
   email = email.trim();
   contrasena = contrasena.trim();
 
   if (email == "" || contrasena == "") {
-      res.json({
-          status: "FAILED",
-          message: "Empty credentials supplied"
-      })
+    res.json({
+      status: "FAILED",
+      message: "Empty credentials supplied",
+    });
   } else {
-      //Checks if the carrier exists
-      Carrier.find({ email })
-          .then(data => {
-              if (data.length) {
-                  //Carrier exists
-                  const hashedPassword = data[0].contrasena;
-                  bcrypt.compare(contrasena, hashedPassword).then(result => {
-                      if (result) {
-                          //Password match
-                          res.json({
-                              status: "SUCCESS",
-                              message: "Signin successful",
-                              data: data
-                          })
-                      } else {
-                          res.json({
-                              status: "FAILED",
-                              message: "Invalid contrasena entered"
-                          })
-                      }
-                  })
-                      .catch(err => {
-                          res.json({
-                              status: "FAILED",
-                              message: "An error occurred while comparing passwords"
-                          });
-                      });
+    //Checks if the carrier exists
+    Carrier.find({ email })
+      .then((data) => {
+        if (data.length) {
+          //Carrier exists
+          const hashedPassword = data[0].contrasena;
+          bcrypt
+            .compare(contrasena, hashedPassword)
+            .then((result) => {
+              if (result) {
+                //Password match
+                res.json({
+                  status: "SUCCESS",
+                  message: "Signin successful",
+                  data: data,
+                });
               } else {
-                  res.json({
-                      status: "FAILED",
-                      message: "Invalid credentials entered!"
-                  })
-              }
-          })
-          .catch(err => {
-              res.json({
+                res.json({
                   status: "FAILED",
-                  message: "An error occured while checking for existing user"
+                  message: "Invalid contrasena entered",
+                });
+              }
+            })
+            .catch((err) => {
+              res.json({
+                status: "FAILED",
+                message: "An error occurred while comparing passwords",
               });
-          })
+            });
+        } else {
+          res.json({
+            status: "FAILED",
+            message: "Invalid credentials entered!",
+          });
+        }
+      })
+      .catch((err) => {
+        res.json({
+          status: "FAILED",
+          message: "An error occured while checking for existing user",
+        });
+      });
   }
-})
+});
 //Read Carrier
 router.get("/read/:id", async (req, res) => {
   let id = req.params.id;
@@ -182,11 +184,11 @@ router.get("/read/:id", async (req, res) => {
     if (err) {
       res.send(err);
     }
-    result.calificacion=parseFloat(result.calificacion.toFixed(2));
+    result.calificacion = parseFloat(result.calificacion.toFixed(2));
     res.json({
       status: "SUCCESS",
       message: "Carrier succesfully found",
-      data: result
+      data: result,
     });
   });
 });
@@ -201,7 +203,7 @@ router.get("/read", async (req, res) => {
     res.send({
       status: "SUCCESS",
       message: "Carrier successfully obtained",
-      data: result
+      data: result,
     });
   });
 });
@@ -212,41 +214,49 @@ router.put("/update/:id", async (req, res) => {
   const apellidos = req.body.apellidos;
   const email = req.body.email;
   const num_contacto = req.body.num_contacto;
-  if (id !== null || nombre !== null || apellidos !== null || email !== null ||
-    num_contacto !== null || id !== "" || nombre !== "" || apellidos !== ""
-    || email !== "" || contrasena !== "" || num_contacto !== "") {
-    Carrier.find({email}).then(async (result) =>  {
-        try {
-          await Carrier.findById(id, (err, updatedCarrier) => {
-            var same_email = false;
-            if (updatedCarrier.email===email) {
-              same_email=true
-            } 
-            if(result.length!=0 && same_email===false){
-              res.json({
-                status:"FAILED",
-                message:"User with the provided email already exists"
-              });
-            } else {
-              updatedCarrier.nombre = nombre;
-              updatedCarrier.apellidos = apellidos;
-              updatedCarrier.email = email;
-              updatedCarrier.num_contacto = num_contacto;
-              updatedCarrier.save();
-              res.json({
-                status: "SUCCESS",
-                message: "Carrier successfully updated",
-                data: updatedCarrier
-              });
-            }
-            var same_email = false;
-          });
-        } catch (err) {
-          console.log(err);
-        }
-      
+  if (
+    id !== null ||
+    nombre !== null ||
+    apellidos !== null ||
+    email !== null ||
+    num_contacto !== null ||
+    id !== "" ||
+    nombre !== "" ||
+    apellidos !== "" ||
+    email !== "" ||
+    contrasena !== "" ||
+    num_contacto !== ""
+  ) {
+    Carrier.find({ email }).then(async (result) => {
+      try {
+        await Carrier.findById(id, (err, updatedCarrier) => {
+          var same_email = false;
+          if (updatedCarrier.email === email) {
+            same_email = true;
+          }
+          if (result.length != 0 && same_email === false) {
+            res.json({
+              status: "FAILED",
+              message: "User with the provided email already exists",
+            });
+          } else {
+            updatedCarrier.nombre = nombre;
+            updatedCarrier.apellidos = apellidos;
+            updatedCarrier.email = email;
+            updatedCarrier.num_contacto = num_contacto;
+            updatedCarrier.save();
+            res.json({
+              status: "SUCCESS",
+              message: "Carrier successfully updated",
+              data: updatedCarrier,
+            });
+          }
+          var same_email = false;
+        });
+      } catch (err) {
+        console.log(err);
+      }
     });
-      
   } else {
     res.json({
       status: "FAILED",
@@ -256,27 +266,29 @@ router.put("/update/:id", async (req, res) => {
 });
 
 //Cambiar contraseña
-router.put('/:userId/updatePassword', async (req, res) => {
+router.put("/:userId/updatePassword", async (req, res) => {
   const userId = req.params.userId;
   const newPassword = req.body.password;
 
   const saltRounds = 10;
-  const hashed = await bcrypt.hash(newPassword, saltRounds)
+  const hashed = await bcrypt.hash(newPassword, saltRounds);
   Carrier.findOneAndUpdate(
     { _id: userId },
     { contrasena: hashed },
     { new: true }
   )
-    .then(updatedUser => {
+    .then((updatedUser) => {
       res.json({
         status: "SUCCESS",
         message: "Carrier successfully updated",
-        data: updatedUser
+        data: updatedUser,
       });
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
-      res.status(500).json({ error: 'An error ocurred while changing password' });
+      res
+        .status(500)
+        .json({ error: "An error ocurred while changing password" });
     });
 });
 
@@ -297,7 +309,7 @@ router.put("/updateVehiculo/:id", async (req, res) => {
       updatedVehiculo.save();
       res.json({
         status: "SUCCESS",
-        message: "Carrier's vehicle successfully updated"
+        message: "Carrier's vehicle successfully updated",
       });
     });
   } catch (err) {
@@ -315,7 +327,7 @@ router.put("/updateStatus/:id", async (req, res) => {
         updatedCarrier.save();
         res.json({
           status: "SUCCESS",
-          message: "Carrier's status successfully updated"
+          message: "Carrier's status successfully updated",
         });
       });
     } catch (err) {
@@ -324,7 +336,7 @@ router.put("/updateStatus/:id", async (req, res) => {
   } else {
     res.json({
       status: "FAILED",
-      message: "Invalid data type"
+      message: "Invalid data type",
     });
   }
 });
@@ -339,58 +351,52 @@ router.get("/readActive", async (req, res) => {
     res.json({
       status: "SUCCESS",
       message: "Active carriers successfully obtained",
-      data: result
+      data: result,
     });
   });
 });
 
-
-  
 //Cambiar precio garrafon
-router.put('/:userId/updatePrecioGarrafon', async (req, res) => {
+router.put("/:userId/updatePrecioGarrafon", async (req, res) => {
   const userId = req.params.userId;
   const precioGarrafon = req.body.precioGarrafon;
 
-  
-  Carrier.findOneAndUpdate(
-    { _id: userId },
-    { precioGarrafon: precioGarrafon }
-  )
-    .then(updatedP => {
+  Carrier.findOneAndUpdate({ _id: userId }, { precioGarrafon: precioGarrafon })
+    .then((updatedP) => {
       res.json({
         status: "SUCCESS",
         message: "Se ha podido cambiar el precio del garrafon",
-        data: updatedP
+        data: updatedP,
       });
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
-      res.status(500).json({ 
-        status:"ERROR",
-        message:"No se pudo cambiar el precio del garrafon." 
+      res.status(500).json({
+        status: "ERROR",
+        message: "No se pudo cambiar el precio del garrafon.",
       });
     });
 });
 
 //review
-router.put("/review/:id",  (req, res) => {
+router.put("/review/:id", (req, res) => {
   const id = req.params.id;
-  const calificacion = req.body.calificacion
-  
+  const calificacion = req.body.calificacion;
+
   try {
-      Carrier.findById(id, (err, updatedReview) => {
-          updatedReview.calificacion = (calificacion + updatedReview.calificacion )/2;
-          updatedReview.save();
-          res.json({
-              status: "SUCCESS",
-              message: "Se ha podido actualizar la review del carrier"
-          });
+    Carrier.findById(id, (err, updatedReview) => {
+      updatedReview.calificacion =
+        (calificacion + updatedReview.calificacion) / 2;
+      updatedReview.save();
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha podido actualizar la review del carrier",
       });
+    });
   } catch (err) {
-      console.log(err);
+    console.log(err);
   }
 });
-
 
 router.get("/balance/:id", async (req, res) => {
   const id = req.params.id;
@@ -423,6 +429,64 @@ router.get("/balance/:id", async (req, res) => {
         status: "SUCCESS",
         message: "Orders successfully obtained",
         data: carrier,
+      });
+    } else {
+      res.status(200).json({
+        status: "FAILED",
+        message: "Unable to find carrier",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.json({
+      status: "FAILED",
+      message: "An error ocurred while checking for existing carrier!",
+    });
+  }
+});
+
+router.get("/home/:id", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    let weeklyBalance = 0;
+    let weeklyOrders = 0;
+    let todayOrders = 0;
+
+    let orders = await Order.find({
+      fecha_pedido: {
+        $gte: Date.now() - 7 * 60 * 60 * 24 * 1000,
+      },
+      id_carrier: id,
+      entrega_status: "done",
+    });
+    weeklyOrders = orders.length;
+    for (let i = 0; i < orders.length; i++) {
+      weeklyBalance += orders[i].cant_garrafones * orders[i].precio;
+    }
+
+    var start = new Date();
+    start.setHours(0, 0, 0, 0);
+    var end = new Date();
+    end.setHours(23, 59, 59, 999);
+
+    orders = await Order.find({
+      fecha_pedido: { $gte: start, $lt: end },
+      id_carrier: id,
+      entrega_status: "done",
+    });
+
+    todayOrders = orders.length;
+
+    if (id) {
+      res.json({
+        status: "SUCCESS",
+        message: "Data successfully obtained",
+        data: {
+          weeklyBalance: weeklyBalance,
+          weeklyOrders: weeklyOrders,
+          todayOrders: orders.length,
+        },
       });
     } else {
       res.status(200).json({
