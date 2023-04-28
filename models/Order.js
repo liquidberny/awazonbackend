@@ -12,6 +12,8 @@ const OrderSchema = new mongoose.Schema({
     entrega_status: String,
     fecha_pedido: Date,
     fecha_entrega: Date,
+    reseñaCarrier:{type: Boolean, default:false},
+    reseñaCliente:{type: Boolean, default:false}
 });
 const Order =  mongoose.model('Order', OrderSchema )
 module.exports = Order;

@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
 const Client = require("../models/Client");
+const Carrier = require("../models/Carrier");
+var ObjectId = require("mongodb").ObjectId;
+;
 //crear orden
 router.post("/create", (req, res) => {
   let id_client = req.body.id_client;
@@ -101,6 +104,136 @@ router.put("/:orderId/entrega_status", async (req, res) => {
       res.status(500).json({
         status: "ERROR",
         message: "No se a podido realizar el cambio de status",
+      });
+    });
+});
+
+// aceptar solicitud de pedido
+router.put("/:orderId/accept-request", async (req, res) => {
+  const orderId = req.params.orderId;
+  const carrier = req.body.carrier;
+  Order.findOneAndUpdate(
+    { _id: orderId },
+    {
+      orden_status: "accepted",
+      entrega_status: "accepted",
+      id_carrier: ObjectId(carrier),
+    }
+  )
+    .then((updatedP) => {
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha aceptado la solicitud de la orden"
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({
+        status: "ERROR",
+        message: "Ocurrió un error al aceptar la solicitud",
+      });
+    });
+});
+
+// rechazar solicitud de pedido
+router.put("/:orderId/decline-request", async (req, res) => {
+  const orderId = req.params.orderId;
+  Order.findOneAndUpdate(
+    { _id: orderId },
+    {
+      orden_status: "declined",
+      entrega_status: "pending"
+    }
+  )
+    .then((updatedP) => {
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha rechazado la solicitud de la orden"
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({
+        status: "ERROR",
+        message: "Ocurrió un error al rechazar la solicitud",
+      });
+    });
+});
+
+// comenzar entrega
+router.put("/:orderId/start-delivery", async (req, res) => {
+  const orderId = req.params.orderId;
+  const carrier = req.body.carrier;
+  Order.findOneAndUpdate(
+    { _id: orderId },
+    {
+      orden_status: "accepted",
+      entrega_status: "accepted",
+      id_carrier: ObjectId(carrier),
+    }
+  )
+    .then((updatedP) => {
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha comenzado la entrega de la orden"
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({
+        status: "ERROR",
+        message: "Ocurrió un error al comenzar la entrega",
+      });
+    });
+});
+
+// cancelar entrega
+router.put("/:orderId/cancel-delivery", async (req, res) => {
+  const orderId = req.params.orderId;
+  Order.findOneAndUpdate(
+    { _id: orderId },
+    {
+      orden_status: "accepted",
+      entrega_status: "pending",
+      id_carrier: null,
+    }
+  )
+    .then((updatedP) => {
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha cancelado la entrega de la orden"
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({
+        status: "ERROR",
+        message: "Ocurrió un error al cancelar la entrega",
+      });
+    });
+});
+
+// finalizar entrega
+router.put("/:orderId/finish-delivery", async (req, res) => {
+  const orderId = req.params.orderId;
+  Order.findOneAndUpdate(
+    { _id: orderId },
+    {
+      orden_status: "accepted",
+      entrega_status: "done",
+    }
+  )
+    .then((updatedP) => {
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha finalizado la entrega de la orden"
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({
+        status: "ERROR",
+        message: "Ocurrió un error al cancelar la entrega",
       });
     });
 });
@@ -214,8 +347,8 @@ router.get("/read/carrier/:id", async (req, res) => {
     });
 });
 
-// US18 - consultar solicitudes de pedidos
-router.get("/pending", async (req, res) => {
+// consultar solicitudes de pedidos
+router.get("/requests", async (req, res) => {
   try {
     const orders = await Order.find({
       orden_status: "pending",
@@ -231,10 +364,82 @@ router.get("/pending", async (req, res) => {
       res.json({
         status: "SUCCESS",
         message: "Orders successfully obtained",
-        data: orders
+        data: orders,
       });
     } else {
-      res.status(404).json({
+      res.status(200).json({
+        status: "FAILED",
+        message: "Unable to find pending orders.",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.json({
+      status: "FAILED",
+      message: "An error ocurred while checking for existing order!",
+    });
+  }
+});
+
+// consultar pedidos pendientes
+router.get("/pending", async (req, res) => {
+  try {
+    const orders = await Order.find({
+      orden_status: "accepted",
+      entrega_status: "pending",
+    });
+
+    for (let i = 0; i < orders.length; i++) {
+      const client = await Client.findById(orders[i].id_client);
+      orders[i].id_client = client;
+    }
+
+    if (orders.length !== 0) {
+      res.json({
+        status: "SUCCESS",
+        message: "Orders successfully obtained",
+        data: orders,
+      });
+    } else {
+      res.status(200).json({
+        status: "FAILED",
+        message: "Unable to find pending orders.",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.json({
+      status: "FAILED",
+      message: "An error ocurred while checking for existing order!",
+    });
+  }
+});
+
+// consultar pedidos en curso
+router.get("/ongoing/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const orders = await Order.find({
+      id_carrier: id,
+      orden_status: "accepted",
+      entrega_status: "accepted",
+    });
+
+    for (let i = 0; i < orders.length; i++) {
+      const client = await Client.findById(orders[i].id_client);
+      orders[i].id_client = client;
+      const carrier = await Carrier.findById(orders[i].id_carrier);
+      orders[i].id_carrier = carrier;
+    }
+
+    if (orders.length !== 0) {
+      res.json({
+        status: "SUCCESS",
+        message: "Orders successfully obtained",
+        data: orders,
+      });
+    } else {
+      res.status(200).json({
         status: "FAILED",
         message: "Unable to find pending orders.",
       });
@@ -385,4 +590,170 @@ router.get("/readbycoloniaydia", async (req, res) => {
   }
 });
 
+// Obtener ordenes finalizadas - Carrier
+router.get("/read/carrier/history/:id", async (req, res) => {
+  const id = req.params.id;
+
+  Order.find({ id_carrier: id, orden_status: "accepted", entrega_status: "done" })
+    .then((result) => {
+      console.log("order");
+      if (result.length !== 0) {
+        res.json({
+          status: "SUCCESS",
+          message: "Order successfully obtained",
+          data: result,
+        });
+      } else {
+        res.status(404).json({
+          status: "FAILED",
+          message: "Unable to find finished orders related to the provided Carrier ID.",
+        });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.json({
+        status: "FAILED",
+        message: "An error ocurred while checking for finished orders!",
+      });
+    });
+});
+
+// Visualizar historial del cliente
+router.get("/read/client/history/:id", async (req, res) => {
+  const id = req.params.id;
+
+  Order.find({ id_client: id, orden_status: "accepted", entrega_status: "done" })
+    .then((result) => {
+      console.log(result);
+      if (result.length !== 0) {
+        res.json({
+          status: "SUCCESS",
+          message: "History successfully obtained",
+          data: result,
+        });
+      } else {
+        res.status(404).json({
+          status: "FAILED",
+          message: "Unable to find history related to the provided Client ID.",
+        });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.json({
+        status: "FAILED",
+        message: "An error ocurred while checking history client",
+      });
+    });
+});
+
+// reseña carrier a cliente
+router.put("/:orderId/review/client", async (req, res) => {
+  const orderId = req.params.orderId;
+  const reseña = req.body.reseña;
+  let calificacion = 0;
+  let mensaje = "";
+  await Order.findOne({ _id: orderId, orden_status: "accepted", entrega_status: "done" }).then((cliente) => {
+    Client.findById(cliente.id_client)
+      .then((result) => {
+        if (!cliente.reseñaCliente) {
+          reseña.id_carrier = cliente.id_carrier;
+          if (result["reseña"] !== undefined) {
+            result.reseña.push(reseña);
+          } else {
+            result.reseña = [reseña];
+          }
+          result.reseña.forEach(calif => {
+            calificacion += Number(calif.calificacion);
+          });
+          result.calificacion = calificacion / result.reseña.length;
+          result.calificacion = parseFloat(result.calificacion.toFixed(2));
+          console.log(result.calificacion);
+          Order.findOne({ _id: orderId }).then((r) => {
+            console.log(r);
+            r.reseñaCliente = true;
+            r.save();
+          });
+          result.save();
+          mensaje = "Review successfully registered";
+        } else {
+          mensaje = "Client already reviewed in this order";
+        }
+        res.json({
+          status: "SUCCESS",
+          message: mensaje
+        })
+      }).catch((err) => {
+        res.json({
+          status: "FAILED",
+          message: "An error ocurred while reviewing client",
+        });
+      }
+      );
+  })
+    .catch((err) => {
+      console.log(err);
+      res.json({
+        status: "FAILED",
+        message: "An error ocurred while reviewing client",
+      });
+    })
+
+});
+// reseña cliente a carrier
+router.put("/:orderId/review/carrier", async (req, res) => {
+  const orderId = req.params.orderId;
+  const reseña = req.body.reseña;
+  let calificacion = 0;
+  let mensaje = "";
+  await Order.findOne({ _id: orderId, orden_status: "accepted", entrega_status: "done" }).then((carrier) => {
+    Carrier.findById(carrier.id_carrier)
+    .then((result) => {
+      console.log(carrier.id_client);
+      if (!carrier.reseñaCarrier) {
+        reseña.id_client = carrier.id_client;
+        if (result["reseña"] !== undefined) {
+          result.reseña.push(reseña);
+        } else {
+          result.reseña = [reseña];
+        }
+        result.reseña.forEach(calif => {
+          calificacion += Number(calif.calificacion);
+        });
+        result.calificacion = calificacion / result.reseña.length;
+        result.calificacion = parseFloat(result.calificacion.toFixed(2));
+        console.log(result.calificacion);
+        Order.findOne({ _id: orderId }).then((r) => {
+          console.log(r);
+          r.reseñaCarrier = true;
+          r.save();
+        });
+        result.save();
+        mensaje = "Review successfully registered";
+      } else {
+        mensaje = "Carrier already reviewed in this order";
+      }
+      res.json({
+        status: "SUCCESS",
+        messgae: mensaje
+      })
+    }).catch((err) => {
+      console.log(err);
+      res.json({
+        status: "FAILED",
+        message: "An error ocurred while reviewing carrier",
+      });
+    }
+    );
+  })
+    .catch((err) => {
+      console.log(err);
+      res.json({
+        status: "FAILED",
+        message: "An error ocurred while reviewing carrier",
+      });
+    })
+
+});
 module.exports = router;
