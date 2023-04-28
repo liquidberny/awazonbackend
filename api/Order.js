@@ -255,39 +255,32 @@ router.get("/read", async (req, res) => {
 router.get("/read/:id", async (req, res) => {
   const id = req.params.id;
 
-  Order.findById(id)
-    .then(async (order) => {
-      if (!order) {
-        res.json({
-          status: "FAILED",
-          message: "Order not found",
-        });
-        return;
-      }
+  try {
+    const order = await Order.findById(id);
+    const client = await Client.findById(order.id_client);
+    order.id_client = client;
+    const carrier = await Carrier.findById(order.id_carrier);
+    order.id_carrier = carrier;
 
-      // Obtener la dirección y horario del cliente asociado a la orden
-      const clientId = order.id_client;
-      const client = await Client.findById(clientId).select(
-        "direccion horario"
-      );
-
+    if (order) {
       res.json({
         status: "SUCCESS",
         message: "Order successfully obtained",
-        data: {
-          ...order.toObject(),
-          direccion: client.direccion,
-          horario: client.horario,
-        },
+        data: order,
       });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.json({
+    } else {
+      res.status(200).json({
         status: "FAILED",
-        message: "An error occurred while obtaining the order",
+        message: "Unable to find pending orders.",
       });
+    }
+  } catch (err) {
+    console.log(err);
+    res.json({
+      status: "FAILED",
+      message: "An error ocurred while checking for existing order!",
     });
+  }
 });
 
 // Consultar orden - cliente
