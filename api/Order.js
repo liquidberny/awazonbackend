@@ -255,39 +255,32 @@ router.get("/read", async (req, res) => {
 router.get("/read/:id", async (req, res) => {
   const id = req.params.id;
 
-  Order.findById(id)
-    .then(async (order) => {
-      if (!order) {
-        res.json({
-          status: "FAILED",
-          message: "Order not found",
-        });
-        return;
-      }
+  try {
+    const order = await Order.findById(id);
+    const client = await Client.findById(order.id_client);
+    order.id_client = client;
+    const carrier = await Carrier.findById(order.id_carrier);
+    order.id_carrier = carrier;
 
-      // Obtener la dirección y horario del cliente asociado a la orden
-      const clientId = order.id_client;
-      const client = await Client.findById(clientId).select(
-        "direccion horario"
-      );
-
+    if (order) {
       res.json({
         status: "SUCCESS",
         message: "Order successfully obtained",
-        data: {
-          ...order.toObject(),
-          direccion: client.direccion,
-          horario: client.horario,
-        },
+        data: order,
       });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.json({
+    } else {
+      res.status(200).json({
         status: "FAILED",
-        message: "An error occurred while obtaining the order",
+        message: "Unable to find pending orders.",
       });
+    }
+  } catch (err) {
+    console.log(err);
+    res.json({
+      status: "FAILED",
+      message: "An error ocurred while checking for existing order!",
     });
+  }
 });
 
 // Consultar orden - cliente
@@ -594,29 +587,39 @@ router.get("/readbycoloniaydia", async (req, res) => {
 router.get("/read/carrier/history/:id", async (req, res) => {
   const id = req.params.id;
 
-  Order.find({ id_carrier: id, orden_status: "accepted", entrega_status: "done" })
-    .then((result) => {
-      console.log("order");
-      if (result.length !== 0) {
-        res.json({
-          status: "SUCCESS",
-          message: "Order successfully obtained",
-          data: result,
-        });
-      } else {
-        res.status(404).json({
-          status: "FAILED",
-          message: "Unable to find finished orders related to the provided Carrier ID.",
-        });
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      res.json({
-        status: "FAILED",
-        message: "An error ocurred while checking for finished orders!",
-      });
+  try {
+    const orders = await Order.find({
+      id_carrier: id,
+      orden_status: "accepted",
+      entrega_status: "done",
     });
+
+    for (let i = 0; i < orders.length; i++) {
+      const client = await Client.findById(orders[i].id_client);
+      orders[i].id_client = client;
+      const carrier = await Carrier.findById(orders[i].id_carrier);
+      orders[i].id_carrier = carrier;
+    }
+
+    if (orders.length !== 0) {
+      res.json({
+        status: "SUCCESS",
+        message: "Orders successfully obtained",
+        data: orders,
+      });
+    } else {
+      res.status(200).json({
+        status: "FAILED",
+        message: "Unable to find pending orders.",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.json({
+      status: "FAILED",
+      message: "An error ocurred while checking for existing order!",
+    });
+  }
 });
 
 // Visualizar historial del cliente
@@ -756,4 +759,5 @@ router.put("/:orderId/review/carrier", async (req, res) => {
     })
 
 });
+
 module.exports = router;

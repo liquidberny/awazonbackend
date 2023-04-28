@@ -10,7 +10,11 @@ const CarrierSchema = new mongoose.Schema({
     },
     isActive: { type: Boolean, default: false},
     precioGarrafon: { type: Number },
-    balance: { type: Number },
+    balance: { 
+        total : { type: Number, default: 0 },
+        servicio : { type: Number, default: 0 },
+        ganancias : { type: Number, default: 0 },
+    }
 });
 
 CarrierSchema.add(User.schema);
