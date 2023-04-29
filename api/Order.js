@@ -8,7 +8,6 @@ var ObjectId = require("mongodb").ObjectId;
 //crear orden
 router.post("/create", (req, res) => {
   let id_client = req.body.id_client;
-  let id_carrier = req.body.id_carrier;
   let cant_garrafones = req.body.cant_garrafones;
   let cuota_servicio = 5;
   let orden_status = "pending";
@@ -18,7 +17,6 @@ router.post("/create", (req, res) => {
 
   if (
     id_client == "" ||
-    id_carrier == "" ||
     cant_garrafones == "" ||
     entrega_status == ""
   ) {
@@ -30,7 +28,6 @@ router.post("/create", (req, res) => {
     // Try to create new order
     const newOrder = new Order({
       id_client,
-      id_carrier,
       cant_garrafones,
       cuota_servicio,
       orden_status,
@@ -49,6 +46,7 @@ router.post("/create", (req, res) => {
         });
       })
       .catch((err) => {
+        console.log(err)
         res.json({
           status: "FAILED",
           message: "An error occurred while creating order",
@@ -107,28 +105,35 @@ router.put("/:orderId/entrega_status", async (req, res) => {
 // aceptar solicitud de pedido
 router.put("/:orderId/accept-request", async (req, res) => {
   const orderId = req.params.orderId;
-  const carrier = req.body.carrier;
-  Order.findOneAndUpdate(
-    { _id: orderId },
-    {
-      orden_status: "accepted",
-      entrega_status: "accepted",
-      id_carrier: ObjectId(carrier),
-    }
-  )
-    .then((updatedP) => {
-      res.json({
-        status: "SUCCESS",
-        message: "Se ha aceptado la solicitud de la orden"
-      });
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({
-        status: "ERROR",
-        message: "Ocurrió un error al aceptar la solicitud",
-      });
+  const carrierId = req.body.carrier;
+  try {
+    const order = await Order.findById(orderId);
+    const carrier = await Carrier.findById(carrierId);
+    const precioGarrafon = carrier.precioGarrafon;
+    const cant_garrafones = order.cant_garrafones;
+    const cuota_servicio = order.cuota_servicio;
+    const precioTotal = precioGarrafon * cant_garrafones + cuota_servicio;
+    
+    await Order.findOneAndUpdate(
+      { _id: orderId },
+      {
+        orden_status: "accepted",
+        entrega_status: "accepted",
+        id_carrier: ObjectId(carrierId),
+        precio: precioTotal
+      }
+    );
+    res.json({
+      status: "SUCCESS",
+      message: "Se ha aceptado la solicitud de la orden"
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      status: "ERROR",
+      message: "Ocurrió un error al aceptar la solicitud",
+    });
+  }
 });
 
 // rechazar solicitud de pedido
