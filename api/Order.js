@@ -597,6 +597,9 @@ router.get("/read/carrier/history/:id", async (req, res) => {
       orders[i].id_carrier = carrier;
     }
 
+    orders.sort((a, b) => b.fecha_pedido - a.fecha_pedido); // Ordena de más reciente a más viejo
+
+
     if (orders.length !== 0) {
       res.json({
         status: "SUCCESS",
@@ -625,6 +628,7 @@ router.get("/read/client/history/:id", async (req, res) => {
   Order.find({ id_client: id, orden_status: "accepted", entrega_status: "done" })
     .then((result) => {
       console.log(result);
+      result.sort((a, b) => b.fecha_pedido - a.fecha_pedido); // Ordena de más reciente a más viejo
       if (result.length !== 0) {
         res.json({
           status: "SUCCESS",
