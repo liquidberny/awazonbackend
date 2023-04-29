@@ -10,9 +10,7 @@ router.post("/create", (req, res) => {
   let id_client = req.body.id_client;
   let id_carrier = req.body.id_carrier;
   let cant_garrafones = req.body.cant_garrafones;
-  let precio = req.body.precio;
   let cuota_servicio = 5;
-  let total = cant_garrafones * precio + cuota_servicio;
   let orden_status = "pending";
   let entrega_status = "pending";
   let fecha_pedido = new Date().toISOString();
@@ -34,9 +32,7 @@ router.post("/create", (req, res) => {
       id_client,
       id_carrier,
       cant_garrafones,
-      precio,
       cuota_servicio,
-      total,
       orden_status,
       entrega_status,
       fecha_pedido,

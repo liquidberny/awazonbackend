@@ -15,5 +15,10 @@ const OrderSchema = new mongoose.Schema({
     reseñaCarrier:{type: Boolean, default:false},
     reseñaCliente:{type: Boolean, default:false}
 });
+OrderSchema.pre('save', async function() {
+    const carrier = await mongoose.model('Carrier').findById(this.id_carrier);
+    this.precio = carrier.precioGarrafon;
+    this.total = (this.precio * this.cant_garrafones) + this.cuota_servicio;
+  });
 const Order =  mongoose.model('Order', OrderSchema )
 module.exports = Order;
