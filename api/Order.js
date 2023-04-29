@@ -120,12 +120,14 @@ router.put("/:orderId/accept-request", async (req, res) => {
         orden_status: "accepted",
         entrega_status: "accepted",
         id_carrier: ObjectId(carrierId),
-        precio: precioTotal
+        precio: precioGarrafon,
+        total: precioTotal
       }
     );
     res.json({
       status: "SUCCESS",
-      message: "Se ha aceptado la solicitud de la orden"
+      message: "Se ha aceptado la solicitud de la orden",
+      data: await Order.findById(orderId)
     });
   } catch (err) {
     console.error(err);
