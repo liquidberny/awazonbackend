@@ -1,12 +1,124 @@
+const schedule = require("node-schedule");
 const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
 const Client = require("../models/Client");
 const Carrier = require("../models/Carrier");
 var ObjectId = require("mongodb").ObjectId;
-;
+
+const jobs = {};
+
+// Finds the orders marked as scheduled and creates their corresponding scheduled job
+// This is a workaround for whenever the API is re-deployed or restarted, so we don't
+// just lose all of the scheduled tasks
+Order.find({ orden_status: "scheduled" }).then((result) => {
+  for (const order of result) {
+    if (jobs[order._id]) continue;
+
+    if (order["fecha_programado"]) {
+      const job = schedule.scheduleJob(
+        new Date(order["fecha_programado"]),
+        setOrderStatus.bind(null, order._id, "pending")
+      );
+
+      jobs[order._id] = job;
+      // console.log("Added task");
+    }
+  }
+  // console.log(jobs);
+});
+
+// Helper functions
+const scheduleOrder = (orderId, date) => {
+  const job = schedule.scheduleJob(
+    date,
+    setOrderStatus.bind(null, orderId, "pending")
+  );
+
+  jobs[orderId] = job;
+
+  return date;
+};
+
+const setOrderStatus = async (orderId, status = "pending") => {
+  await Order.findOneAndUpdate(
+    { _id: orderId },
+    { orden_status: status, entrega_status: status }
+  );
+};
+
+const flattenDate = (date) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+const addMillis = (date, factor) => date.getTime() + factor * 3600000;
+
+const getDayOfWeek = () => new Date().getDay();
+
+const getNearestIndex = (clientDays) => {
+  for (const day of clientDays) {
+    if (getDayOfWeek() < day) {
+      return day;
+    }
+  }
+
+  return clientDays[0];
+};
+
+const getNearestDate = (clientSched) => {
+  const currentDate = new Date();
+  const flatDate = flattenDate(currentDate);
+
+  if (
+    clientSched.dias.includes(flatDate.getDay()) &&
+    addMillis(flatDate, clientSched.hora_inicial) > currentDate.getTime()
+  ) {
+    return new Date(addMillis(flatDate, clientSched.hora_inicial));
+  }
+
+  const tempDate = flattenDate(new Date());
+  tempDate.setDate(
+    tempDate.getDate() +
+      ((getNearestIndex(clientSched.dias) + 7 - tempDate.getDay()) % 7 || 7)
+  );
+
+  return new Date(addMillis(tempDate, clientSched.hora_inicial));
+};
+
+// const getOrder = async (id) => {
+//   const order = await Order.findById(id);
+//   const client = await Client.findById(order.id_client);
+//   order.id_client = client;
+//   const carrier = await Carrier.findById(order.id_carrier);
+//   order.id_carrier = carrier;
+
+//   return order;
+// };
+
+const isOnSchedule = (clientSched) => {
+  if (clientSched.dias.length === 0) return false;
+
+  if (!clientSched.dias.includes(getDayOfWeek())) {
+    return false;
+  }
+
+  const currentDate = new Date();
+  const flatDate = flattenDate(currentDate);
+  const initialTime = addMillis(flatDate, clientSched.hora_inicial);
+  const finalTime = addMillis(flatDate, clientSched.hora_final);
+
+  if (
+    currentDate.getTime() >= initialTime &&
+    currentDate.getTime() < finalTime
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+// Router
 //crear orden
-router.post("/create", (req, res) => {
+router.post("/create", async (req, res) => {
   let id_client = req.body.id_client;
   let cant_garrafones = req.body.cant_garrafones;
   let cuota_servicio = 5;
@@ -14,6 +126,13 @@ router.post("/create", (req, res) => {
   let entrega_status = "pending";
   let fecha_pedido = new Date().toISOString();
   let fecha_entrega = "";
+
+  const client = await Client.findById(id_client);
+
+  if (client.horario.dias.length !== 0 && !isOnSchedule(client.horario)) {
+    orden_status = "scheduled";
+    entrega_status = "scheduled";
+  }
 
   if (
     id_client == "" ||
@@ -36,20 +155,38 @@ router.post("/create", (req, res) => {
       fecha_entrega,
     });
 
+    if (orden_status === "scheduled") {
+      newOrder["fecha_programado"] = getNearestDate(client.horario);
+    }
+
     newOrder
       .save()
       .then((result) => {
+        if (result.orden_status === "scheduled") {
+          const scheduledDate = scheduleOrder(
+            result._id,
+            getNearestDate(client.horario)
+          );
+
+          return res.json({
+            status: "SUCCESS",
+            message: `Pedido programado; se realizará automáticamente en esta fecha: ${scheduledDate}`,
+            data: result,
+            scheduledDate: scheduledDate.getTime(),
+          });
+        }
+
         res.json({
           status: "SUCCESS",
-          message: "Order created successfully!",
+          message: "Orden creada exitosamente.",
           data: result,
         });
       })
       .catch((err) => {
-        console.log(err)
+        console.log(err);
         res.json({
           status: "FAILED",
-          message: "An error occurred while creating order",
+          message: "Ocurrió un error al crear la orden.",
         });
       });
   }
@@ -63,15 +200,15 @@ router.put("/:orderId/orden_status", async (req, res) => {
       updatedP.orden_status = orden;
       res.json({
         status: "SUCCESS",
-        message: "Se ha cambiado la status de la orden",
+        message: "Se ha cambiado la status de la orden.",
         data: updatedP,
       });
     })
     .catch((err) => {
       console.error(err);
       res.status(500).json({
-        status: "ERROR",
-        message: "No se a podido realizar el cambio de status",
+        status: "FAILED",
+        message: "No fue posible realizar el cambio de status.",
       });
     });
 });
@@ -89,15 +226,15 @@ router.put("/:orderId/entrega_status", async (req, res) => {
       updatedP.entrega_status = newOrder;
       res.json({
         status: "SUCCESS",
-        message: "Se ha cambiado la status de la orden",
+        message: "Se ha cambiado la status de la orden.",
         data: updatedP,
       });
     })
     .catch((err) => {
       console.error(err);
       res.status(500).json({
-        status: "ERROR",
-        message: "No se a podido realizar el cambio de status",
+        status: "FAILED",
+        message: "No fue posible realizar el cambio de status.",
       });
     });
 });
@@ -126,14 +263,14 @@ router.put("/:orderId/accept-request", async (req, res) => {
     );
     res.json({
       status: "SUCCESS",
-      message: "Se ha aceptado la solicitud de la orden",
+      message: "Se ha aceptado la solicitud de la orden.",
       data: await Order.findById(orderId)
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({
-      status: "ERROR",
-      message: "Ocurrió un error al aceptar la solicitud",
+      status: "FAILED",
+      message: "Ocurrió un error al aceptar la solicitud.",
     });
   }
 });
@@ -145,20 +282,20 @@ router.put("/:orderId/decline-request", async (req, res) => {
     { _id: orderId },
     {
       orden_status: "declined",
-      entrega_status: "pending"
+      entrega_status: "pending",
     }
   )
     .then((updatedP) => {
       res.json({
         status: "SUCCESS",
-        message: "Se ha rechazado la solicitud de la orden"
+        message: "Se ha rechazado la solicitud de la orden.",
       });
     })
     .catch((err) => {
       console.error(err);
       res.status(500).json({
-        status: "ERROR",
-        message: "Ocurrió un error al rechazar la solicitud",
+        status: "FAILED",
+        message: "Ocurrió un error al rechazar la solicitud.",
       });
     });
 });
@@ -178,14 +315,14 @@ router.put("/:orderId/start-delivery", async (req, res) => {
     .then((updatedP) => {
       res.json({
         status: "SUCCESS",
-        message: "Se ha comenzado la entrega de la orden"
+        message: "Ha comenzado la entrega de la orden.",
       });
     })
     .catch((err) => {
       console.error(err);
       res.status(500).json({
-        status: "ERROR",
-        message: "Ocurrió un error al comenzar la entrega",
+        status: "FAILED",
+        message: "Ocurrió un error al comenzar la entrega.",
       });
     });
 });
@@ -204,14 +341,14 @@ router.put("/:orderId/cancel-delivery", async (req, res) => {
     .then((updatedP) => {
       res.json({
         status: "SUCCESS",
-        message: "Se ha cancelado la entrega de la orden"
+        message: "Se ha cancelado la entrega de la orden.",
       });
     })
     .catch((err) => {
       console.error(err);
       res.status(500).json({
-        status: "ERROR",
-        message: "Ocurrió un error al cancelar la entrega",
+        status: "FAILED",
+        message: "Ocurrió un error al cancelar la entrega.",
       });
     });
 });
@@ -229,14 +366,14 @@ router.put("/:orderId/finish-delivery", async (req, res) => {
     .then((updatedP) => {
       res.json({
         status: "SUCCESS",
-        message: "Se ha finalizado la entrega de la orden"
+        message: "Se ha finalizado la entrega de la orden.",
       });
     })
     .catch((err) => {
       console.error(err);
       res.status(500).json({
-        status: "ERROR",
-        message: "Ocurrió un error al cancelar la entrega",
+        status: "FAILED",
+        message: "Ocurrió un error al cancelar la entrega.",
       });
     });
 });
@@ -249,7 +386,7 @@ router.get("/read", async (req, res) => {
     }
     res.json({
       status: "SUCCESS",
-      message: "Order successfully obtained",
+      message: "Orden obtenida exitosamente.",
       data: result,
     });
   });
@@ -268,20 +405,20 @@ router.get("/read/:id", async (req, res) => {
     if (order) {
       res.json({
         status: "SUCCESS",
-        message: "Order successfully obtained",
+        message: "Orden obtenida exitosamente.",
         data: order,
       });
     } else {
       res.status(200).json({
         status: "FAILED",
-        message: "Unable to find pending orders.",
+        message: "No fue posible obtener las órdenes pendientes.",
       });
     }
   } catch (err) {
     console.log(err);
     res.json({
       status: "FAILED",
-      message: "An error ocurred while checking for existing order!",
+      message: "Ocurrió un error al obtener las órdenes pendientes.",
     });
   }
 });
@@ -296,13 +433,14 @@ router.get("/read/client/:id", async (req, res) => {
       if (result.length !== 0) {
         res.json({
           status: "SUCCESS",
-          message: "Order successfully obtained",
+          message: "Orden obtenida exitosamente.",
           data: result,
         });
       } else {
         res.status(404).json({
           status: "FAILED",
-          message: "Unable to find orders related to the provided CLient ID.",
+          message:
+            "No fue posible encontrar órdenes vinculadas con el ID proporcionado.",
         });
       }
     })
@@ -310,7 +448,7 @@ router.get("/read/client/:id", async (req, res) => {
       console.log(err);
       res.json({
         status: "FAILED",
-        message: "An error ocurred while checking for existing order!",
+        message: "Ocurrió un error al obtener las órdenes.",
       });
     });
 });
@@ -324,13 +462,14 @@ router.get("/read/carrier/:id", async (req, res) => {
       if (result.length !== 0) {
         res.json({
           status: "SUCCESS",
-          message: "Order successfully obtained",
+          message: "Orden obtenida exitosamente.",
           data: result,
         });
       } else {
         res.status(404).json({
           status: "FAILED",
-          message: "Unable to find orders related to the provided Carrier ID.",
+          message:
+            "No fue posible encontrar órdenes vinculadas con el ID proporcionado.",
         });
       }
     })
@@ -338,7 +477,7 @@ router.get("/read/carrier/:id", async (req, res) => {
       console.log(err);
       res.json({
         status: "FAILED",
-        message: "An error ocurred while checking for existing order!",
+        message: "Ocurrió un error al obtener las órdenes.",
       });
     });
 });
@@ -359,20 +498,20 @@ router.get("/requests", async (req, res) => {
     if (orders.length !== 0) {
       res.json({
         status: "SUCCESS",
-        message: "Orders successfully obtained",
+        message: "Orden obtenida exitosamente.",
         data: orders,
       });
     } else {
       res.status(200).json({
         status: "FAILED",
-        message: "Unable to find pending orders.",
+        message: "No fue posible obtener las órdenes pendientes.",
       });
     }
   } catch (err) {
     console.log(err);
     res.json({
       status: "FAILED",
-      message: "An error ocurred while checking for existing order!",
+      message: "Ocurrió un error al obtener las órdenes.",
     });
   }
 });
@@ -393,20 +532,20 @@ router.get("/pending", async (req, res) => {
     if (orders.length !== 0) {
       res.json({
         status: "SUCCESS",
-        message: "Orders successfully obtained",
+        message: "Órdenes obtenidas exitosamente.",
         data: orders,
       });
     } else {
       res.status(200).json({
         status: "FAILED",
-        message: "Unable to find pending orders.",
+        message: "No fue posible obtener las órdenes.",
       });
     }
   } catch (err) {
     console.log(err);
     res.json({
       status: "FAILED",
-      message: "An error ocurred while checking for existing order!",
+      message: "Ocurrió un error al obtener las órdenes.",
     });
   }
 });
@@ -431,20 +570,20 @@ router.get("/ongoing/:id", async (req, res) => {
     if (orders.length !== 0) {
       res.json({
         status: "SUCCESS",
-        message: "Orders successfully obtained",
+        message: "Órdenes activas obtenidas exitosamente.",
         data: orders,
       });
     } else {
       res.status(200).json({
         status: "FAILED",
-        message: "Unable to find pending orders.",
+        message: "No fue posible encontrar las órdenes activas.",
       });
     }
   } catch (err) {
     console.log(err);
     res.json({
       status: "FAILED",
-      message: "An error ocurred while checking for existing order!",
+      message: "Ocurrió un error al obtener las órdenes.",
     });
   }
 });
@@ -461,14 +600,14 @@ router.get("/accepted/:id", async (req, res) => {
       if (result.length !== 0) {
         res.json({
           status: "SUCCESS",
-          message: "Delivery in course successfully obtained",
+          message: "Órdenes en curso obtenidas exitosamente.",
           data: result,
         });
       } else {
         res.status(404).json({
           status: "FAILED",
           message:
-            "Unable to find orders in course related to the provided ID.",
+            "No fue posible encontrar órdenes activas vinculadas al ID proporcionado.",
         });
       }
     })
@@ -476,7 +615,7 @@ router.get("/accepted/:id", async (req, res) => {
       console.log(err);
       res.json({
         status: "FAILED",
-        message: "An error ocurred while checking for existing delivery!",
+        message: "Ocurrió un error al obtener los pedidos en curso.",
       });
     });
 });
@@ -486,7 +625,7 @@ router.get("/readbycolonia", async (req, res) => {
   if (!colony) {
     return res.status(400).json({
       status: "FAILED",
-      message: "Please provide a valid colony name",
+      message: "El nombre de la colonia no es válido.",
     });
   }
 
@@ -498,13 +637,13 @@ router.get("/readbycolonia", async (req, res) => {
 
     return res.json({
       status: "SUCCESS",
-      message: `Orders successfully obtained for clients in ${colony} colony`,
+      message: `Órdenes de habitantes de la colonia ${colony} obtenidas exitosamente.`,
       data: orders,
     });
   } catch (err) {
     return res.status(500).json({
       status: "FAILED",
-      message: "An error occurred while fetching orders",
+      message: "Ocurrió un error al obtener las órdenes.",
       error: err,
     });
   }
@@ -515,7 +654,7 @@ router.get("/readbydias", async (req, res) => {
   if (!day) {
     return res.status(400).json({
       status: "FAILED",
-      message: "Please provide a valid day",
+      message: "El día proporcionado no es válido.",
     });
   }
 
@@ -534,7 +673,7 @@ router.get("/readbydias", async (req, res) => {
     console.log(err);
     return res.status(500).json({
       status: "FAILED",
-      message: "An error occurred while fetching orders",
+      message: "Ocurrió un error al obtener las órdenes.",
       error: err,
     });
   }
@@ -547,7 +686,7 @@ router.get("/readbycoloniaydia", async (req, res) => {
   if (!colonia && !dias) {
     return res.status(400).json({
       status: "FAILED",
-      message: "Please provide a valid colony name or day",
+      message: "El día o la colonia no son válidos.",
     });
   }
 
@@ -573,14 +712,14 @@ router.get("/readbycoloniaydia", async (req, res) => {
 
     return res.json({
       status: "SUCCESS",
-      message: "Orders successfully obtained",
+      message: "Órdenes obtenidas exitosamente.",
       data: orders,
     });
   } catch (err) {
     console.log(err);
     return res.status(500).json({
       status: "FAILED",
-      message: "An error occurred while fetching orders",
+      message: "Ocurrió un error al obtener las órdenes.",
       error: err,
     });
   }
@@ -610,20 +749,20 @@ router.get("/read/carrier/history/:id", async (req, res) => {
     if (orders.length !== 0) {
       res.json({
         status: "SUCCESS",
-        message: "Orders successfully obtained",
+        message: "Órdenes obtenidas exitosamente.",
         data: orders,
       });
     } else {
       res.status(200).json({
         status: "FAILED",
-        message: "Unable to find pending orders.",
+        message: "No fue posible encontrar órdenes finalizadas.",
       });
     }
   } catch (err) {
     console.log(err);
     res.json({
       status: "FAILED",
-      message: "An error ocurred while checking for existing order!",
+      message: "Ocurrió un error al obtener las órdenes.",
     });
   }
 });
@@ -632,20 +771,25 @@ router.get("/read/carrier/history/:id", async (req, res) => {
 router.get("/read/client/history/:id", async (req, res) => {
   const id = req.params.id;
 
-  Order.find({ id_client: id, orden_status: "accepted", entrega_status: "done" })
+  Order.find({
+    id_client: id,
+    orden_status: "accepted",
+    entrega_status: "done",
+  })
     .then((result) => {
       console.log(result);
       result.sort((a, b) => b.fecha_pedido - a.fecha_pedido); // Ordena de más reciente a más viejo
       if (result.length !== 0) {
         res.json({
           status: "SUCCESS",
-          message: "History successfully obtained",
+          message: "Historial obtenido exitosamente.",
           data: result,
         });
       } else {
         res.status(404).json({
           status: "FAILED",
-          message: "Unable to find history related to the provided Client ID.",
+          message:
+            "No fue posible encontrar el historial del ID de cliente proporcionado.",
         });
       }
     })
@@ -653,7 +797,7 @@ router.get("/read/client/history/:id", async (req, res) => {
       console.log(err);
       res.json({
         status: "FAILED",
-        message: "An error ocurred while checking history client",
+        message: "Ocurrió un error al obtener el historial del cliente.",
       });
     });
 });
@@ -664,52 +808,56 @@ router.put("/:orderId/review/client", async (req, res) => {
   const reseña = req.body.reseña;
   let calificacion = 0;
   let mensaje = "";
-  await Order.findOne({ _id: orderId, orden_status: "accepted", entrega_status: "done" }).then((cliente) => {
-    Client.findById(cliente.id_client)
-      .then((result) => {
-        if (!cliente.reseñaCliente) {
-          reseña.id_carrier = cliente.id_carrier;
-          if (result["reseña"] !== undefined) {
-            result.reseña.push(reseña);
-          } else {
-            result.reseña = [reseña];
-          }
-          result.reseña.forEach(calif => {
-            calificacion += Number(calif.calificacion);
-          });
-          result.calificacion = calificacion / result.reseña.length;
-          result.calificacion = parseFloat(result.calificacion.toFixed(2));
-          console.log(result.calificacion);
-          Order.findOne({ _id: orderId }).then((r) => {
-            console.log(r);
-            r.reseñaCliente = true;
-            r.save();
-          });
-          result.save();
-          mensaje = "Review successfully registered";
-        } else {
-          mensaje = "Client already reviewed in this order";
-        }
-        res.json({
-          status: "SUCCESS",
-          message: mensaje
-        })
-      }).catch((err) => {
-        res.json({
-          status: "FAILED",
-          message: "An error ocurred while reviewing client",
-        });
-      }
-      );
+  await Order.findOne({
+    _id: orderId,
+    orden_status: "accepted",
+    entrega_status: "done",
   })
+    .then((cliente) => {
+      Client.findById(cliente.id_client)
+        .then((result) => {
+          if (!cliente.reseñaCliente) {
+            reseña.id_carrier = cliente.id_carrier;
+            if (result["reseña"] !== undefined) {
+              result.reseña.push(reseña);
+            } else {
+              result.reseña = [reseña];
+            }
+            result.reseña.forEach((calif) => {
+              calificacion += Number(calif.calificacion);
+            });
+            result.calificacion = calificacion / result.reseña.length;
+            result.calificacion = parseFloat(result.calificacion.toFixed(2));
+            console.log(result.calificacion);
+            Order.findOne({ _id: orderId }).then((r) => {
+              console.log(r);
+              r.reseñaCliente = true;
+              r.save();
+            });
+            result.save();
+            mensaje = "Reseña registrada exitosamente.";
+          } else {
+            mensaje = "Client already reviewed in this order";
+          }
+          res.json({
+            status: "SUCCESS",
+            message: mensaje,
+          });
+        })
+        .catch((err) => {
+          res.json({
+            status: "FAILED",
+            message: "Ocurrió un error al registrar la reseña.",
+          });
+        });
+    })
     .catch((err) => {
       console.log(err);
       res.json({
         status: "FAILED",
-        message: "An error ocurred while reviewing client",
+        message: "Ocurrió un error al registrar la reseña.",
       });
-    })
-
+    });
 });
 // reseña cliente a carrier
 router.put("/:orderId/review/carrier", async (req, res) => {
@@ -717,54 +865,58 @@ router.put("/:orderId/review/carrier", async (req, res) => {
   const reseña = req.body.reseña;
   let calificacion = 0;
   let mensaje = "";
-  await Order.findOne({ _id: orderId, orden_status: "accepted", entrega_status: "done" }).then((carrier) => {
-    Carrier.findById(carrier.id_carrier)
-    .then((result) => {
-      console.log(carrier.id_client);
-      if (!carrier.reseñaCarrier) {
-        reseña.id_client = carrier.id_client;
-        if (result["reseña"] !== undefined) {
-          result.reseña.push(reseña);
-        } else {
-          result.reseña = [reseña];
-        }
-        result.reseña.forEach(calif => {
-          calificacion += Number(calif.calificacion);
-        });
-        result.calificacion = calificacion / result.reseña.length;
-        result.calificacion = parseFloat(result.calificacion.toFixed(2));
-        console.log(result.calificacion);
-        Order.findOne({ _id: orderId }).then((r) => {
-          console.log(r);
-          r.reseñaCarrier = true;
-          r.save();
-        });
-        result.save();
-        mensaje = "Review successfully registered";
-      } else {
-        mensaje = "Carrier already reviewed in this order";
-      }
-      res.json({
-        status: "SUCCESS",
-        messgae: mensaje
-      })
-    }).catch((err) => {
-      console.log(err);
-      res.json({
-        status: "FAILED",
-        message: "An error ocurred while reviewing carrier",
-      });
-    }
-    );
+  await Order.findOne({
+    _id: orderId,
+    orden_status: "accepted",
+    entrega_status: "done",
   })
+    .then((carrier) => {
+      Carrier.findById(carrier.id_carrier)
+        .then((result) => {
+          console.log(carrier.id_client);
+          if (!carrier.reseñaCarrier) {
+            reseña.id_client = carrier.id_client;
+            if (result["reseña"] !== undefined) {
+              result.reseña.push(reseña);
+            } else {
+              result.reseña = [reseña];
+            }
+            result.reseña.forEach((calif) => {
+              calificacion += Number(calif.calificacion);
+            });
+            result.calificacion = calificacion / result.reseña.length;
+            result.calificacion = parseFloat(result.calificacion.toFixed(2));
+            console.log(result.calificacion);
+            Order.findOne({ _id: orderId }).then((r) => {
+              console.log(r);
+              r.reseñaCarrier = true;
+              r.save();
+            });
+            result.save();
+            mensaje = "Reseña registrada exitosamente.";
+          } else {
+            mensaje = "Carrier already reviewed in this order";
+          }
+          res.json({
+            status: "SUCCESS",
+            messgae: mensaje,
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          res.json({
+            status: "FAILED",
+            message: "Ocurrió un error al registrar la reseña.",
+          });
+        });
+    })
     .catch((err) => {
       console.log(err);
       res.json({
         status: "FAILED",
-        message: "An error ocurred while reviewing carrier",
+        message: "Ocurrió un error al registrar la reseña.",
       });
-    })
-
+    });
 });
 
 module.exports = router;
