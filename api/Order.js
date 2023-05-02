@@ -263,7 +263,7 @@ router.put("/:orderId/accept-request", async (req, res) => {
     );
     res.json({
       status: "SUCCESS",
-      message: "Se ha aceptado la solicitud de la orden.",,
+      message: "Se ha aceptado la solicitud de la orden.",
       data: await Order.findById(orderId)
     });
   } catch (err) {
