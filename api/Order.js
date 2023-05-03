@@ -134,11 +134,7 @@ router.post("/create", async (req, res) => {
     entrega_status = "scheduled";
   }
 
-  if (
-    id_client == "" ||
-    cant_garrafones == "" ||
-    entrega_status == ""
-  ) {
+  if (id_client == "" || cant_garrafones == "" || entrega_status == "") {
     res.json({
       status: "FAILED",
       message: "Empty input fields!",
@@ -250,7 +246,7 @@ router.put("/:orderId/accept-request", async (req, res) => {
     const cant_garrafones = order.cant_garrafones;
     const cuota_servicio = order.cuota_servicio;
     const precioTotal = precioGarrafon * cant_garrafones + cuota_servicio;
-    
+
     await Order.findOneAndUpdate(
       { _id: orderId },
       {
@@ -258,13 +254,13 @@ router.put("/:orderId/accept-request", async (req, res) => {
         entrega_status: "accepted",
         id_carrier: ObjectId(carrierId),
         precio: precioGarrafon,
-        total: precioTotal
+        total: precioTotal,
       }
     );
     res.json({
       status: "SUCCESS",
       message: "Se ha aceptado la solicitud de la orden.",
-      data: await Order.findById(orderId)
+      data: await Order.findById(orderId),
     });
   } catch (err) {
     console.error(err);
@@ -361,6 +357,7 @@ router.put("/:orderId/finish-delivery", async (req, res) => {
     {
       orden_status: "accepted",
       entrega_status: "done",
+      fecha_entrega: new Date(),
     }
   )
     .then((updatedP) => {
@@ -745,7 +742,6 @@ router.get("/read/carrier/history/:id", async (req, res) => {
 
     orders.sort((a, b) => b.fecha_pedido - a.fecha_pedido); // Ordena de más reciente a más viejo
 
-
     if (orders.length !== 0) {
       res.json({
         status: "SUCCESS",
@@ -776,7 +772,14 @@ router.get("/read/client/history/:id", async (req, res) => {
     orden_status: "accepted",
     entrega_status: "done",
   })
-    .then((result) => {
+    .then(async (result) => {
+      for (const order of result) {
+        const client = await Client.findById(order.id_client);
+        order.id_client = client;
+        const carrier = await Carrier.findById(order.id_carrier);
+        order.id_carrier = carrier;
+      }
+
       console.log(result);
       result.sort((a, b) => b.fecha_pedido - a.fecha_pedido); // Ordena de más reciente a más viejo
       if (result.length !== 0) {
