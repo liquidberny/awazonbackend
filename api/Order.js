@@ -767,39 +767,46 @@ router.get("/read/carrier/history/:id", async (req, res) => {
   }
 });
 
-// Visualizar historial del cliente
+// historial de pedidos cliente
 router.get("/read/client/history/:id", async (req, res) => {
   const id = req.params.id;
 
-  Order.find({
-    id_client: id,
-    orden_status: "accepted",
-    entrega_status: "done",
-  })
-    .then((result) => {
-      console.log(result);
-      result.sort((a, b) => b.fecha_pedido - a.fecha_pedido); // Ordena de más reciente a más viejo
-      if (result.length !== 0) {
-        res.json({
-          status: "SUCCESS",
-          message: "Historial obtenido exitosamente.",
-          data: result,
-        });
-      } else {
-        res.status(404).json({
-          status: "FAILED",
-          message:
-            "No fue posible encontrar el historial del ID de cliente proporcionado.",
-        });
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      res.json({
-        status: "FAILED",
-        message: "Ocurrió un error al obtener el historial del cliente.",
-      });
+  try {
+    const orders = await Order.find({
+      id_client: id,
+      orden_status: "accepted",
+      entrega_status: "done",
     });
+
+    for (let i = 0; i < orders.length; i++) {
+      const client = await Client.findById(orders[i].id_client);
+      orders[i].id_client = client;
+      const carrier = await Carrier.findById(orders[i].id_carrier);
+      orders[i].id_carrier = carrier;
+    }
+
+    orders.sort((a, b) => b.fecha_pedido - a.fecha_pedido); // Ordena de más reciente a más viejo
+
+
+    if (orders.length !== 0) {
+      res.json({
+        status: "SUCCESS",
+        message: "Órdenes obtenidas exitosamente.",
+        data: orders,
+      });
+    } else {
+      res.status(200).json({
+        status: "FAILED",
+        message: "No fue posible encontrar órdenes finalizadas.",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.json({
+      status: "FAILED",
+      message: "Ocurrió un error al obtener las órdenes.",
+    });
+  }
 });
 
 // reseña carrier a cliente
