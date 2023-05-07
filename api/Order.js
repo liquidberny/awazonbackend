@@ -95,11 +95,9 @@ const getNearestDate = (clientSched) => {
 // };
 
 const isOnSchedule = (clientSched) => {
-  if (clientSched.dias.length === 0) return false;
-
-  if (!clientSched.dias.includes(getDayOfWeek())) {
-    return false;
-  }
+  console.log(getDayOfWeek());
+  console.log(clientSched.dias);
+  if (!clientSched.dias.includes(getDayOfWeek())) return false;
 
   const currentDate = new Date();
   const flatDate = flattenDate(currentDate);
@@ -323,15 +321,43 @@ router.put("/:orderId/start-delivery", async (req, res) => {
     });
 });
 
+// cancelar orden
+router.put("/:orderId/cancel-order", async (req, res) => {
+  const orderId = req.params.orderId;
+  Order.findOneAndUpdate(
+    { _id: orderId },
+    {
+      orden_status: "canceled",
+      entrega_status: "canceled",
+      id_carrier: null,
+    }
+  )
+    .then((updatedP) => {
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha cancelado la entrega de la orden.",
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({
+        status: "FAILED",
+        message: "Ocurrió un error al cancelar la entrega.",
+      });
+    });
+});
+
 // cancelar entrega
 router.put("/:orderId/cancel-delivery", async (req, res) => {
   const orderId = req.params.orderId;
   Order.findOneAndUpdate(
     { _id: orderId },
     {
-      orden_status: "accepted",
+      orden_status: "pending",
       entrega_status: "pending",
       id_carrier: null,
+      precio: null,
+      total: null,
     }
   )
     .then((updatedP) => {
