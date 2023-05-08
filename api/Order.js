@@ -81,25 +81,11 @@ const getNearestDate = (clientSched) => {
       ((getNearestIndex(clientSched.dias) + 7 - tempDate.getDay()) % 7 || 7)
   );
 
-  return new Date(addMillis(tempDate, clientSched.hora_inicial));
+  return addMillis(tempDate, clientSched.hora_inicial);
 };
 
-// const getOrder = async (id) => {
-//   const order = await Order.findById(id);
-//   const client = await Client.findById(order.id_client);
-//   order.id_client = client;
-//   const carrier = await Carrier.findById(order.id_carrier);
-//   order.id_carrier = carrier;
-
-//   return order;
-// };
-
 const isOnSchedule = (clientSched) => {
-  if (clientSched.dias.length === 0) return false;
-
-  if (!clientSched.dias.includes(getDayOfWeek())) {
-    return false;
-  }
+  if (!clientSched.dias.includes(getDayOfWeek())) return false;
 
   const currentDate = new Date();
   const flatDate = flattenDate(currentDate);
@@ -134,11 +120,7 @@ router.post("/create", async (req, res) => {
     entrega_status = "scheduled";
   }
 
-  if (
-    id_client == "" ||
-    cant_garrafones == "" ||
-    entrega_status == ""
-  ) {
+  if (id_client == "" || cant_garrafones == "" || entrega_status == "") {
     res.json({
       status: "FAILED",
       message: "Empty input fields!",
@@ -156,7 +138,9 @@ router.post("/create", async (req, res) => {
     });
 
     if (orden_status === "scheduled") {
-      newOrder["fecha_programado"] = getNearestDate(client.horario);
+      newOrder["fecha_programado"] = new Date(
+        getNearestDate(client.horario)
+      ).toISOString();
     }
 
     newOrder
@@ -172,7 +156,6 @@ router.post("/create", async (req, res) => {
             status: "SUCCESS",
             message: `Pedido programado; se realizará automáticamente en esta fecha: ${scheduledDate}`,
             data: result,
-            scheduledDate: scheduledDate.getTime(),
           });
         }
 
@@ -250,7 +233,7 @@ router.put("/:orderId/accept-request", async (req, res) => {
     const cant_garrafones = order.cant_garrafones;
     const cuota_servicio = order.cuota_servicio;
     const precioTotal = precioGarrafon * cant_garrafones + cuota_servicio;
-    
+
     await Order.findOneAndUpdate(
       { _id: orderId },
       {
@@ -258,13 +241,13 @@ router.put("/:orderId/accept-request", async (req, res) => {
         entrega_status: "accepted",
         id_carrier: ObjectId(carrierId),
         precio: precioGarrafon,
-        total: precioTotal
+        total: precioTotal,
       }
     );
     res.json({
       status: "SUCCESS",
       message: "Se ha aceptado la solicitud de la orden.",
-      data: await Order.findById(orderId)
+      data: await Order.findById(orderId),
     });
   } catch (err) {
     console.error(err);
@@ -327,15 +310,43 @@ router.put("/:orderId/start-delivery", async (req, res) => {
     });
 });
 
+// cancelar orden
+router.put("/:orderId/cancel-order", async (req, res) => {
+  const orderId = req.params.orderId;
+  Order.findOneAndUpdate(
+    { _id: orderId },
+    {
+      orden_status: "canceled",
+      entrega_status: "canceled",
+      id_carrier: null,
+    }
+  )
+    .then((updatedP) => {
+      res.json({
+        status: "SUCCESS",
+        message: "Se ha cancelado la entrega de la orden.",
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({
+        status: "FAILED",
+        message: "Ocurrió un error al cancelar la entrega.",
+      });
+    });
+});
+
 // cancelar entrega
 router.put("/:orderId/cancel-delivery", async (req, res) => {
   const orderId = req.params.orderId;
   Order.findOneAndUpdate(
     { _id: orderId },
     {
-      orden_status: "accepted",
+      orden_status: "pending",
       entrega_status: "pending",
       id_carrier: null,
+      precio: null,
+      total: null,
     }
   )
     .then((updatedP) => {
@@ -361,6 +372,7 @@ router.put("/:orderId/finish-delivery", async (req, res) => {
     {
       orden_status: "accepted",
       entrega_status: "done",
+      fecha_entrega: new Date(),
     }
   )
     .then((updatedP) => {
@@ -745,7 +757,6 @@ router.get("/read/carrier/history/:id", async (req, res) => {
 
     orders.sort((a, b) => b.fecha_pedido - a.fecha_pedido); // Ordena de más reciente a más viejo
 
-
     if (orders.length !== 0) {
       res.json({
         status: "SUCCESS",
@@ -771,42 +782,42 @@ router.get("/read/carrier/history/:id", async (req, res) => {
 router.get("/read/client/history/:id", async (req, res) => {
   const id = req.params.id;
 
-  try {
-    const orders = await Order.find({
-      id_client: id,
-      orden_status: "accepted",
-      entrega_status: "done",
-    });
+  Order.find({
+    id_client: id,
+    orden_status: ["accepted", "canceled"],
+    entrega_status: ["done", "canceled"],
+  })
+    .then(async (result) => {
+      for (const order of result) {
+        const client = await Client.findById(order.id_client);
+        order.id_client = client;
+        const carrier = await Carrier.findById(order.id_carrier);
+        order.id_carrier = carrier;
+      }
 
-    for (let i = 0; i < orders.length; i++) {
-      const client = await Client.findById(orders[i].id_client);
-      orders[i].id_client = client;
-      const carrier = await Carrier.findById(orders[i].id_carrier);
-      orders[i].id_carrier = carrier;
-    }
-
-    orders.sort((a, b) => b.fecha_pedido - a.fecha_pedido); // Ordena de más reciente a más viejo
-
-
-    if (orders.length !== 0) {
+      console.log(result);
+      result.sort((a, b) => b.fecha_pedido - a.fecha_pedido); // Ordena de más reciente a más viejo
+      if (result.length !== 0) {
+        res.json({
+          status: "SUCCESS",
+          message: "Historial obtenido exitosamente.",
+          data: result,
+        });
+      } else {
+        res.status(404).json({
+          status: "FAILED",
+          message:
+            "No fue posible encontrar el historial del ID de cliente proporcionado.",
+        });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
       res.json({
-        status: "SUCCESS",
-        message: "Órdenes obtenidas exitosamente.",
-        data: orders,
-      });
-    } else {
-      res.status(200).json({
         status: "FAILED",
-        message: "No fue posible encontrar órdenes finalizadas.",
+        message: "Ocurrió un error al obtener el historial del cliente.",
       });
-    }
-  } catch (err) {
-    console.log(err);
-    res.json({
-      status: "FAILED",
-      message: "Ocurrió un error al obtener las órdenes.",
     });
-  }
 });
 
 // reseña carrier a cliente
