@@ -12,6 +12,9 @@ const OrderSchema = new mongoose.Schema({
   fecha_pedido: Date,
   fecha_entrega: Date,
   fecha_programado: Date,
+  millis_pedido: Number,
+  millis_entrega: Number,
+  millis_programado: Number,
   reseñaCarrier: { type: Boolean, default: false },
   reseñaCliente: { type: Boolean, default: false },
 });
