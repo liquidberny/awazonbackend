@@ -81,22 +81,10 @@ const getNearestDate = (clientSched) => {
       ((getNearestIndex(clientSched.dias) + 7 - tempDate.getDay()) % 7 || 7)
   );
 
-  return new Date(addMillis(tempDate, clientSched.hora_inicial));
+  return addMillis(tempDate, clientSched.hora_inicial);
 };
 
-// const getOrder = async (id) => {
-//   const order = await Order.findById(id);
-//   const client = await Client.findById(order.id_client);
-//   order.id_client = client;
-//   const carrier = await Carrier.findById(order.id_carrier);
-//   order.id_carrier = carrier;
-
-//   return order;
-// };
-
 const isOnSchedule = (clientSched) => {
-  console.log(getDayOfWeek());
-  console.log(clientSched.dias);
   if (!clientSched.dias.includes(getDayOfWeek())) return false;
 
   const currentDate = new Date();
@@ -150,7 +138,9 @@ router.post("/create", async (req, res) => {
     });
 
     if (orden_status === "scheduled") {
-      newOrder["fecha_programado"] = getNearestDate(client.horario);
+      newOrder["fecha_programado"] = new Date(
+        getNearestDate(client.horario)
+      ).toISOString();
     }
 
     newOrder
@@ -166,7 +156,6 @@ router.post("/create", async (req, res) => {
             status: "SUCCESS",
             message: `Pedido programado; se realizará automáticamente en esta fecha: ${scheduledDate}`,
             data: result,
-            scheduledDate: scheduledDate.getTime(),
           });
         }
 
@@ -795,8 +784,8 @@ router.get("/read/client/history/:id", async (req, res) => {
 
   Order.find({
     id_client: id,
-    orden_status: "accepted",
-    entrega_status: "done",
+    orden_status: ["accepted", "canceled"],
+    entrega_status: ["done", "canceled"],
   })
     .then(async (result) => {
       for (const order of result) {
