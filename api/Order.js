@@ -105,12 +105,14 @@ const isOnSchedule = (clientSched) => {
 // Router
 //crear orden
 router.post("/create", async (req, res) => {
+  const globalDate = new Date();
+
   let id_client = req.body.id_client;
   let cant_garrafones = req.body.cant_garrafones;
   let cuota_servicio = 5;
   let orden_status = "pending";
   let entrega_status = "pending";
-  let fecha_pedido = new Date().toISOString();
+  let fecha_pedido = globalDate.getTime();
   let fecha_entrega = "";
 
   const client = await Client.findById(id_client);
@@ -138,9 +140,9 @@ router.post("/create", async (req, res) => {
     });
 
     if (orden_status === "scheduled") {
-      newOrder["fecha_programado"] = new Date(
-        getNearestDate(client.horario)
-      ).toISOString();
+      const nearestDateMillis = getNearestDate(client.horario);
+
+      newOrder["fecha_programado"] = nearestDateMillis;
     }
 
     newOrder
@@ -367,12 +369,14 @@ router.put("/:orderId/cancel-delivery", async (req, res) => {
 // finalizar entrega
 router.put("/:orderId/finish-delivery", async (req, res) => {
   const orderId = req.params.orderId;
+  const globalDate = new Date();
+
   Order.findOneAndUpdate(
     { _id: orderId },
     {
       orden_status: "accepted",
       entrega_status: "done",
-      fecha_entrega: new Date(),
+      fecha_entrega: globalDate.getTime(),
     }
   )
     .then((updatedP) => {
@@ -415,6 +419,7 @@ router.get("/read/:id", async (req, res) => {
     order.id_carrier = carrier;
 
     if (order) {
+      console.log(order);
       res.json({
         status: "SUCCESS",
         message: "Orden obtenida exitosamente.",
@@ -470,7 +475,6 @@ router.get("/read/carrier/:id", async (req, res) => {
 
   Order.find({ id_carrier: id })
     .then((result) => {
-      console.log("order");
       if (result.length !== 0) {
         res.json({
           status: "SUCCESS",

@@ -9,9 +9,9 @@ const OrderSchema = new mongoose.Schema({
   total: Number,
   orden_status: String,
   entrega_status: String,
-  fecha_pedido: Date,
-  fecha_entrega: Date,
-  fecha_programado: Date,
+  fecha_pedido: Number,
+  fecha_entrega: Number,
+  fecha_programado: Number,
   reseñaCarrier: { type: Boolean, default: false },
   reseñaCliente: { type: Boolean, default: false },
 });
