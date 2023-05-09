@@ -375,16 +375,23 @@ router.put("/review/:id", (req, res) => {
 router.get("/read/:id", async (req, res) => {
   let id = req.params.id;
   await Client.findById(id).exec((err, result) => {
-    if (err) {
-      return res.send(err);
+    try {
+      if (err) {
+        return res.send(err);
+      }
+      console.log(result);
+      result.calificacion = parseFloat(result.calificacion.toFixed(2));
+      res.json({
+        status: "SUCCESS",
+        message: "Datos del cliente obtenidos correctamente.",
+        data: result,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: "FAILED",
+        message: "Ocurrió un error al obtener los datos del cliente.",
+      });
     }
-    //res.send(result);
-    result.calificacion = parseFloat(result.calificacion.toFixed(2));
-    res.json({
-      status: "SUCCESS",
-      message: "Datos del cliente obtenidos correctamente.",
-      data: result,
-    });
   });
 });
 

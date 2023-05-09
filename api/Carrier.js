@@ -181,15 +181,22 @@ router.post("/signin", (req, res) => {
 router.get("/read/:id", async (req, res) => {
   let id = req.params.id;
   await Carrier.findById(id).exec((err, result) => {
-    if (err) {
-      res.send(err);
+    try {
+      if (err) {
+        return res.send(err);
+      }
+      result.calificacion = parseFloat(result.calificacion.toFixed(2));
+      res.json({
+        status: "SUCCESS",
+        message: "Carrier succesfully found",
+        data: result,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: "FAILED",
+        message: "Ocurrió un error al obtener los datos del repartidor.",
+      });
     }
-    result.calificacion = parseFloat(result.calificacion.toFixed(2));
-    res.json({
-      status: "SUCCESS",
-      message: "Carrier succesfully found",
-      data: result,
-    });
   });
 });
 
