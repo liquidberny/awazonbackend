@@ -376,7 +376,7 @@ router.get("/read/:id", async (req, res) => {
   let id = req.params.id;
   await Client.findById(id).exec((err, result) => {
     if (err) {
-      res.send(err);
+      return res.send(err);
     }
     //res.send(result);
     result.calificacion = parseFloat(result.calificacion.toFixed(2));
@@ -403,49 +403,48 @@ router.get("/read", async (req, res) => {
 });
 
 router.get("/balance/:id", async (req, res) => {
-    const id = req.params.id;
-  
-    try {
-      const client = await Client.findById(id);
-      let total = 0;
-      let serviceFee = 0;
-      let balance = 0;
-      const orders = await Order.find({
-        id_client: id,
-        orden_status: "accepted",
-        entrega_status: "done",
-      });
-  
-      for (let i = 0; i < orders.length; i++) {
-        total += orders[i].total;
-        serviceFee += orders[i].cuota_servicio;
-        balance += orders[i].cant_garrafones * orders[i].precio;
-      }
-  
-      if (client) {
-        res.json({
-          status: "SUCCESS",
-          message: "Orders successfully obtained",
-          data: {
-            total: total,
-            serviceFee: serviceFee,
-            balance: balance,
-          },
-        });
-      } else {
-        res.status(200).json({
-          status: "FAILED",
-          message: "Unable to find carrier",
-        });
-      }
-    } catch (err) {
-      console.log(err);
+  const id = req.params.id;
+
+  try {
+    const client = await Client.findById(id);
+    let total = 0;
+    let serviceFee = 0;
+    let balance = 0;
+    const orders = await Order.find({
+      id_client: id,
+      orden_status: "accepted",
+      entrega_status: "done",
+    });
+
+    for (let i = 0; i < orders.length; i++) {
+      total += orders[i].total;
+      serviceFee += orders[i].cuota_servicio;
+      balance += orders[i].cant_garrafones * orders[i].precio;
+    }
+
+    if (client) {
       res.json({
+        status: "SUCCESS",
+        message: "Orders successfully obtained",
+        data: {
+          total: total,
+          serviceFee: serviceFee,
+          balance: balance,
+        },
+      });
+    } else {
+      res.status(200).json({
         status: "FAILED",
-        message: "An error ocurred while checking for existing carrier!",
+        message: "Unable to find carrier",
       });
     }
-  });
-  
+  } catch (err) {
+    console.log(err);
+    res.json({
+      status: "FAILED",
+      message: "An error ocurred while checking for existing carrier!",
+    });
+  }
+});
 
 module.exports = router;

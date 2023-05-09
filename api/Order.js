@@ -112,9 +112,8 @@ router.post("/create", async (req, res) => {
   let cuota_servicio = 5;
   let orden_status = "pending";
   let entrega_status = "pending";
-  let fecha_pedido = globalDate.toISOString();
+  let fecha_pedido = globalDate.getTime();
   let fecha_entrega = "";
-  const millis_pedido = globalDate.getTime();
 
   const client = await Client.findById(id_client);
 
@@ -138,14 +137,12 @@ router.post("/create", async (req, res) => {
       entrega_status,
       fecha_pedido,
       fecha_entrega,
-      millis_pedido,
     });
 
     if (orden_status === "scheduled") {
       const nearestDateMillis = getNearestDate(client.horario);
 
-      newOrder["fecha_programado"] = new Date(nearestDateMillis);
-      newOrder["millis_programado"] = nearestDateMillis;
+      newOrder["fecha_programado"] = nearestDateMillis;
     }
 
     newOrder
@@ -379,8 +376,7 @@ router.put("/:orderId/finish-delivery", async (req, res) => {
     {
       orden_status: "accepted",
       entrega_status: "done",
-      fecha_entrega: globalDate,
-      millis_entrega: globalDate.getTime(),
+      fecha_entrega: globalDate.getTime(),
     }
   )
     .then((updatedP) => {
@@ -423,6 +419,7 @@ router.get("/read/:id", async (req, res) => {
     order.id_carrier = carrier;
 
     if (order) {
+      console.log(order);
       res.json({
         status: "SUCCESS",
         message: "Orden obtenida exitosamente.",
